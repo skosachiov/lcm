@@ -20,7 +20,6 @@ services:
     command: >
       /bin/bash -c "
       sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf &&
-      chmod a+rx /var/www/html &&
       apache2ctl -D FOREGROUND
       "
 
@@ -50,5 +49,6 @@ services:
       assets/build-signed-uki.sh;
       cp -f /lcm/artifacts/* /var/www/html/;
       rm -f /var/www/html/zip;
-      zip -A -j /var/www/html/zip /var/www/html/*.uki /var/www/html/*.efi
+      zip -A -j /var/www/html/zip /var/www/html/*.uki /var/www/html/*.efi;
+      chmod -R a+rx /var/www/html
       "
