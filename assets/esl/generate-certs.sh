@@ -1,3 +1,5 @@
+# apt install efitools systemd-ukify python3-cryptography
+
 # Generate CA private key (PK)
 openssl req -newkey rsa:4096 -nodes -keyout PK.key -new -x509 -sha256 -days 3650 -subj "/CN=My Platform Key/" -out PK.crt
 # Generate KEK private key
