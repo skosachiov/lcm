@@ -28,7 +28,7 @@ fi
 mkdir -p "$OUTPUT_DIR"
 
 echo "=== Add components ==="
-sed -i "s/Components:.*/Components: main contrib non-free non-free-firmware/g" /etc/apt/sources.list.d/debian.sources
+sed -i "s/Components:.*/Components: main contrib non-free non-free-firmware/g" /etc/apt/sources.list.d/debian.sources || true
 
 echo "=== Installing required packages ==="
 export DEBIAN_FRONTEND=noninteractive
