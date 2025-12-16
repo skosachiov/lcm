@@ -13,7 +13,7 @@ XKBOPTIONS=""
 BACKSPACE="guess"' > /etc/default/keyboard
 
 apt-get -y install keyboard-configuration
-apt-get -y install openssh-server vim curl
+apt-get -y install openssh-server vim curl wget
 apt-get -y install systemd-cryptsetup tpm2-tools tpm2-tss-engine-tools dracut gnupg
 
 CRYPTDEV=$(lsblk -rbo NAME | grep crypt)
@@ -32,3 +32,5 @@ mkdir -p /etc/ansible
 echo "localhost ansible_connection=local" >> /etc/ansible/hosts
 echo '@reboot root bash -c "sleep 90 && /usr/bin/ansible-pull -i localhost -t dummy -U https://github.com/skosachiov/lcm.git workstation-test.yml | logger"' >> /etc/cron.d/ansible-pull
 
+# wget -O /root/linux-signed.uki $1/linux-signed.uki
+# wget -O /root/systemd-bootx64-signed.uki $1/systemd-bootx64-signed.uki
