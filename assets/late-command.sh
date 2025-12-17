@@ -16,6 +16,8 @@ apt-get -y install keyboard-configuration
 apt-get -y install openssh-server vim curl wget
 apt-get -y install systemd-cryptsetup tpm2-tools tpm2-tss-engine-tools dracut gnupg
 
+apt-get -y install linux-image-amd64
+
 CRYPTDEV=$(lsblk -rbo NAME | grep crypt)
 CRYPTPART=$(blkid -t TYPE=crypto_LUKS -o device)
 openssl rand -hex 4096 > /root/unlock-key-file.weak
