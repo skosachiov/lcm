@@ -31,46 +31,53 @@ along with Linux Configuration Manager (LCM).  If not, see <https://www.gnu.org/
 
 ## Briefly
 
-*The main goal of this project is the configuration and control of various types of devices operating in a corporate environment. Information security is the main direction of development. Roles have default settings that can be dynamically overridden using "inventories" folder rules based on subnet, host group (organizational unit or branch), operating system and so on. Git provides lifecycle. [Roles](#Roles) (policies) can also be used separately.*
+*The objective of the project is to provide management capabilities (similar to SCCM) for various types of devices operating in a corporate environment. Information security is the primary focus of development. Roles come with default settings that can be dynamically overridden using rules from the "inventories" folder based on subnet, host group (organizational unit or branch), operating system, etc. Git enables lifecycle management through a GitOps approach. [Roles](#Roles) (policies) can also be used separately.*
 
 ## More details
 
-Let's imagine how easy it would be to organise 85000 Ubuntus in the French National Gendarmerie using only two simple but highly popular tools git and ansible. There are two strong arguments in favor of this approach:
-- Plenty of ansible specialists in the job market and their salary isn't extremely high
-- KISS principle (Unix philosophy)
+Consider the challenge of managing an extensive fleet of user devices. For example, the French National Gendarmerie oversees 100,000 workstations, and the government of Schleswig-Holstein has approved migrating 30,000 computers to Linux and LibreOffice. This project proposes using only two simple yet widely adopted tools for this purpose: Git and Ansible. Several arguments support this approach:
 
-Obviously there are lot's of ways that could solve individual problems of workstation administrators (ansible galaxy). Although there is no complex solution. There are systems such as Foreman and Saltstack, but Puppet is outdated and Salt hasn't gained popularity yet. AWX (ansible tower) is suitable for servers in push mode. This project offers a complete solution reminiscent of SCCM from the world of Windows, but Ansible replaces Powershell DSC and we have a bonus in the form of version control system git.
+* The job market offers many Ansible specialists whose salaries are not excessively high.
+* Ansible includes an ansible-pull mode, which drastically reduces the load on the management server. A single server can manage tens of thousands of devices.
+* Adherence to the KISS principle (Unix philosophy).
+* Git provides version control and GitOps-style management.
 
-It's also important that this project includes inventory data. It's the only possibility to tell about dynamic inventory in ansible-pull mode.
+While numerous solutions exist for specific workstation administration tasks (e.g., Ansible Galaxy), a comprehensive solution is lacking. Systems such as Foreman and Saltstack are available, but Puppet is outdated, and Salt is complex and not yet widely adopted. AWX (Ansible Tower) is suitable for servers in push mode. This project offers a complete solution reminiscent of SCCM in the Windows world, where Ansible replaces PowerShell DSC, with the added benefit of Git version control.
 
-Part of the security elements was taken from ComplianceASCode and OpenSCAP, but these projects are changed for administrators being able to improve code in GIT on daily routine. Roles are provided with readable templates and variables which is different from ComplianceAsCode.
+Additionally, the project includes inventory templates, which are essential for implementing dynamic device inventory in ansible-pull mode. These templates are designed to suit the needs of most enterprises.
 
-Security, which is one of the main priorities, is provided comprehensively. Leaking of information is blocked by role "dlp": usbguard, switching off modules WiFi and bt. Wide range of settings from remount "tmp" and "home" with options noexec, nodev to checking list of repositories using fingerprints. The most useful thing is the control of mandated access - the control of integrity and signing of performing files. Ideally, every day an information security administrator gets a report with "changed=0" about every workstation, which means that all PCs are in target condition and nothing had to be changed. "Changed!=0" is the cause to concern.
+Security tasks are partially derived from ComplianceAsCode and OpenSCAP but have been adapted to allow administrators to refine the code in Git as part of their daily routines. The roles feature user-readable templates and variables, distinguishing them from ComplianceAsCode.
 
-Profiling is performed with certain set of roles:
-- workstation (common workstation in enterprise domain)
-- mobile-device (laptop for accessing enterprise resources from the Internet)
-- flash-drive (bootable flash drive for BYOD)
-- distribution-point (distribution point in an enterprise division)
-- server (general purpose server)
+Security, as a top priority, is addressed comprehensively. Information leakage is mitigated by the "dlp" role, which includes USBGuard and disabling WiFi and Bluetooth modules. A broad range of configurations is applied—from remounting "tmp" and "home" with noexec and nodev options to verifying repository lists using key fingerprints. The most valuable feature is mandatory access control, ensuring the integrity and signing of executable files.
 
-It's possible to use flags of security in profiles. For example:
-- mandatory-access (apparmor, selinux)
-- administrative-workstation (group access is restricted)
-- network-auditd (send log to the logserver)
-- always-on-display (disable lock and turn off display)
-- devel-workstation (put the host into test workstation mode)
-- unrestricted-os (user can download other operating systems)
-- fs-userspace (file systems are available to the user)
-- thin-client (thin client mode)
-- flash drive (flash-drive thin client mode)
-- dist-upgrade (host will force all packages to be updated)
+Ideally, the enterprise security administrator receives a daily report with "changed=0" for each workstation, indicating that all hosts remain in their desired state with no modifications required. "Changed != 0" warrants further investigation.
 
-There are a lot of possibilities for information security officers to agree on changes and control the workflow: code review, merge-requests, pull-requests. For example, only an security officer can commit to master branch, see [Lifecycle](#Lifecycle). Ansible-pull agents take playbooks from master branch. There is space for creativity for subdivision gendarmes. Airforce or airtransport can solve their specific problems in separate repositories git and this doesn't cancel basic security settings. On premise Gitlab will be great for collaboration.
+Profiling is accomplished through a defined set of roles compiled into playbooks:
 
-Initially, there were several roles responsible for connecting to the proprietary systems like Citrix and Anti-Virus ESET. These roles have been removed from this draft as these roles are of no interest to most admins seeking independence from proprietary software. The subtleties of connecting to the Microsoft AD controller and Exchange were not ruled out, since many organizations are only in the process of transitioning from MS AD to FreeIPA. In addition, this role is applicable to the SambaAD based controller.
+* workstation (a standard workstation within the enterprise domain)
+* mobile-device (a laptop for accessing corporate resources over the internet)
+* flash-drive (a bootable USB drive for BYOD)
+* distribution-point (a distribution point within an enterprise unit)
+* server (a general-purpose server), etc.
 
-The project is adapted for development in the Internet environment with or without corporate repositories. Availability of corporate resources is determined dynamically and the role is adjusted depending on the result.
+Profiles support security flags, such as:
+
+* mandatory-access (AppArmor, SELinux)
+* administrative-workstation (restricted group access)
+* network-auditd (sending auditd data to a log server)
+* always-on-display (disabling display lock and shutdown)
+* devel-workstation (switching the host to test workstation mode)
+* unrestricted-os (users may boot other operating systems)
+* fs-userspace (file systems accessible to the user)
+* thin-client (thin client mode)
+* flash-drive (thin client mode on a USB drive)
+* dist-upgrade (host forcibly updates all packages), etc.
+
+For security specialists, numerous opportunities exist to coordinate changes and oversee management workflows: code reviews, merge requests, and pull requests. For instance, only a security specialist may commit to the master branch (see Lifecycle). Ansible-pull agents retrieve playbooks from the master branch. Large enterprise divisions have room for creativity—branches and units can address their specific needs in separate Git repositories without compromising baseline security configurations. On-premise solutions like GitLab or Forgejo are well-suited for collaboration.
+
+Initially, several roles handled connections to proprietary systems such as Citrix and ESET antivirus. These roles have been removed from this repository as they are not relevant to most administrators seeking independence from proprietary software. Details for connecting to Microsoft AD domain controllers and Exchange have been retained, as many organizations are still transitioning from MS AD to FreeIPA. Moreover, these roles are also applicable to SambaAD-based controllers.
+
+The project is designed for development in internet environments, with or without corporate repositories. Corporate resource availability is determined dynamically, and roles adjust accordingly.
 
 <a name="Folder structure"></a>
 # Folder structure
