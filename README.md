@@ -263,34 +263,40 @@ If you have not created an ansible user:
 `ANSIBLE_HOST_KEY_CHECKING=False sshpass -p password ansible-playbook -vv --ask-pass -e "ansible_become_password=password" -b -i 192.168.122.230, -u admin workstation.yml`
 
 ## Deploy workstation in pull mode
-
+```
 wget http://example.test/git/lcm/late-script.sh
 sh late-script.sh
+```
 
 ## Deploy administrative workstation in pull mode
 
 Create host flag: `touch /etc/ansible/administrative-workstation`
+```
 wget http://example.test/git/lcm/late-script.sh
 sh late-script.sh
+```
 
 ## Deploy workstation mandatory access in pull mode
 
 Create host flag: `touch /etc/ansible/mandatory-access`
+```
 wget http://example.test/git/lcm/late-script.sh
 sh late-script.sh
+```
 
 ## Deploy non-domain PC in push mode
 
-ansible-pull -i localhost -d /root/.ansible/pull/lcm -t mob -U https://example.test/git/lcm mobile-device.yml
+`ansible-pull -i localhost -d /root/.ansible/pull/lcm -t mob -U https://example.test/git/lcm mobile-device.yml`
 
 ## Deploy non-domain PC in pull mode
-
+```
 wget http://example.test/git/lcm/late-script-mob.sh
 sh late-script-mob.sh
+```
 
 ## Install workstation with preseed.cfg (all data on the disk will be lost)
 
-auto=true priority=critical url=https://github.com/skosachiov/lcm/raw/main/assets/preseed.cfg
+`auto=true priority=critical url=https://github.com/skosachiov/lcm/raw/main/assets/preseed.cfg`
 
 ## Check Workstation security in push mode
 
