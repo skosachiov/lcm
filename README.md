@@ -50,7 +50,7 @@ Security tasks are partially derived from ComplianceAsCode and OpenSCAP but have
 
 Security, as a top priority, is addressed comprehensively. Information leakage is mitigated by the "dlp" role, which includes USBGuard and disabling WiFi and Bluetooth modules. A broad range of configurations is applied—from remounting "tmp" and "home" with noexec and nodev options to verifying repository lists using key fingerprints. The most valuable feature is mandatory access control, ensuring the integrity and signing of executable files.
 
-Ideally, the enterprise security administrator receives a daily report with "changed=0" for each workstation, indicating that all hosts remain in their desired state with no modifications required. "Changed != 0" warrants further investigation.
+Ideally, the enterprise security administrator receives a daily report with "Changed = 0" for each workstation, indicating that all hosts remain in their desired state with no modifications required. "Changed != 0" warrants further investigation.
 
 Profiling is accomplished through a defined set of roles compiled into playbooks:
 
