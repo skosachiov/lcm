@@ -75,7 +75,7 @@ fi
 echo "Detected kernel version: $KERNEL_VERSION"
 
 # Write crypttab
-echo 'luks-badc0ffe-ea75-babe-cafe-deadbeef1234 UUID=badc0ffe-ea75-babe-cafe-deadbeef1234 none luks,discard,tpm2-device=auto,tpm2-measure-pcr=yes,tpm2-measure-keyslot-nvpcr=cryptsetup' > /etc/crypttab
+echo 'storage_crypt LABEL=storage_crypt none luks,discard,tpm2-device=auto,tpm2-measure-pcr=yes,tpm2-measure-keyslot-nvpcr=cryptsetup' > /etc/crypttab
 
 # Build initrd
 SCRIPT_DIR=$(dirname $0)
