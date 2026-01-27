@@ -93,6 +93,9 @@ trap 'rm -rf "$SIGNING_DIR"' EXIT
 echo "$PCR_PRIVATE_KEY_SYSTEM" > "$SIGNING_DIR/tpm2-pcr-private-key-system.key"
 chmod 600 "$SIGNING_DIR/tpm2-pcr-private-key-system.key"
 
+echo "$PCR_PRIVATE_KEY_INITRD" > "$SIGNING_DIR/tpm2-pcr-private-key-initrd.key"
+chmod 600 "$SIGNING_DIR/tpm2-pcr-private-key-initrd.key"
+
 echo "=== Building UKI ==="
 ukify build \
     --linux="/boot/vmlinuz-$KERNEL_VERSION" \
