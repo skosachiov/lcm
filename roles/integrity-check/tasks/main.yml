@@ -11,11 +11,6 @@
         dest: /etc/aide/aide.conf
         regexp: ^#?\s*report_url
         line: "report_url=syslog:LOG_INFO"
-    - name: Ensure aide is active Disable mail @aide_is_active
-      replace:
-        dest: /etc/cron.daily/aide
-        regexp: (mail\s*-s)
-        replace: /bin/true \1
     - name: Ensure aide is active Database is up-to-date @aide_is_active
       stat:
         path: /var/lib/aide/aide.db
