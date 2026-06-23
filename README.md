@@ -294,9 +294,18 @@ wget http://example.test/git/lcm/late-script-mob.sh
 sh late-script-mob.sh
 ```
 
-## Install workstation with preseed.cfg (all data on the disk will be lost)
+## Demonstration of secure-boot role and workstation deploy with preseed.cfg (all data on the disk will be lost)
 
+First, check the functionality in the qemu virtual machine. Before installation: 
+* BIOS must be set to secure Custom mode (operating system can add certificates to the BIOS to verify system components)
+* TPM virtual device must be connected
+
+Add to the installer kernel launch options:
 `auto=true priority=critical url=https://github.com/skosachiov/lcm/raw/main/assets/preseed.cfg`
+
+After three automatic reboots, you can check the SecBoot status and the PCR trust level required for automatic disk decryption:
+* `bootctl status`
+* `cat /run/log/systemd/tpm2-measure.log`
 
 ## Check Workstation security in push mode
 
