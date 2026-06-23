@@ -49,7 +49,8 @@ var_home_with_exec: false
 var_no_proxy: "127.0.0.1,10.0.0.0/8,localhost,*.si.mi"
 
 var_ansible_repo: "lcm"
-var_ansible_git: "https://{{var_ansible_fqdn}}/git/{{var_ansible_repo}}"
+#var_ansible_git: "https://{{var_ansible_fqdn}}/git/{{var_ansible_repo}}"
+var_ansible_git: "https://github.com/skosachiov/lcm.git"
 #var_ansible_git_sec: "https://{{var_ansible_fqdn}}/git/{{var_ansible_repo_sec}}"
 var_ansible_tags: ws
 var_ansible_tags_sec: sec
