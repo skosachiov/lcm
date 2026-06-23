@@ -51,19 +51,6 @@
     - sec
     - file_owner_and_permissions_grub_d
 
-- name: Ensure permissions on /etc/timezone @etc_timezone_perm
-  ignore_errors: "{{ansible_check_mode}}"
-  file:
-    path: /etc/timezone
-    mode: go-w,a-x
-    owner: root
-    group: root
-  when: ansible_pkg_mgr == 'apt'
-  tags:
-    - ws
-    - sec
-    - etc_timezone_perm
-
 - name: Ensure permissions on /usr/share/zoneinfo @usr_share_zoneinfo_perm
   ignore_errors: "{{ansible_check_mode}}"
   block:
