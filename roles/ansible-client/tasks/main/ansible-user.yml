@@ -41,6 +41,11 @@
         name: "{{var_ansible_username}}"
         groups: "{{'lpadmin' if ansible_pkg_mgr == 'apt' else 'lp'}}"
       when: result.stdout_lines[0] == '0'
+    - name: Sudo installed @sudo_installed
+      package:
+        name:
+          - sudo
+        state: latest
     - name: Create ansible user Sudoers @create_ansible_user
       lineinfile:
         dest: /etc/sudoers
