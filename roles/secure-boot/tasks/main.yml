@@ -69,7 +69,7 @@
   when: var_secure_boot
   tags:
     - ws
-    - standard_luks_uuid    
+    - standard_luks_uuid
 
 - name: Systemd partition unique guid @systemd_uniq_guid
   ignore_errors: "{{ ansible_check_mode }}"
@@ -305,6 +305,14 @@
   tags:
     - ws
     - uki_cryptenroll
+
+- name: Post cryptenroll task @post_cryptenroll_task
+  include_role:
+    name: ansible-client
+  when: secure_boot_status and result_hash.rc == 0 and result_pubkey.rc == 0
+  tags:
+    - ws
+    - post_cryptenroll_task
 
 - name: Grub absent @grub_absent
   ignore_errors: "{{ansible_check_mode}}"
