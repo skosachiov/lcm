@@ -1,0 +1,11 @@
+- name: Install gnome-core @install_gnome_core
+  package:
+    name:
+      - gnome-core
+    state: present
+  when:
+    - var_preffered_desktop is defined
+    - var_preffered_desktop == 'gnome'
+  tags:
+    - ws
+    - install_gnome_core
