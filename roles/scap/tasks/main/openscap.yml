@@ -77,7 +77,6 @@
         src: "/home/{{var_ansible_username}}/oval-definitions-{{ansible_lsb.codename}}.xml.bz2"
         dest: "/home/{{var_ansible_username}}/"
         remote_src: yes
-        copy: no
         creates: "/home/{{var_ansible_username}}/oval-definitions-{{ansible_lsb.codename}}.xml"
     - name: OpenSCAP CVE vulnerability scan debian Scan @oscap_oval_eval_debian
       check_mode: no
