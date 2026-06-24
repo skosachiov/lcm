@@ -1,8 +1,12 @@
 - name: Install gnome-core @install_gnome_core
-  package:
-    name:
-      - gnome-core
-    state: present
+  block:
+    - name: Install gnome-core @install_gnome_core
+      package:
+        name:
+          - gnome-core
+        state: present
+    - name: Set default to graphical target @install_gnome_core
+      command: systemctl set-default graphical.target
   when:
     - var_preffered_desktop is defined
     - var_preffered_desktop == 'gnome'
