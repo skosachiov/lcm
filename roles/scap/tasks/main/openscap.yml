@@ -13,7 +13,7 @@
 - name: Install openscap client dependencies bullseye @install_openscap_dependencies_bullseye
   ignore_errors: "{{ansible_check_mode}}"
   package:
-    name: openscap
+    name: openscap-scanner
     state: present
   when: ansible_distribution == "Debian" and ansible_distribution_major_version|int >= 11
   tags:
