@@ -73,10 +73,8 @@
         mode: go+r
     - name: OpenSCAP CVE vulnerability scan debian Extract OVAL definitions @oscap_oval_eval_debian
       changed_when: false
-      unarchive:
-        src: "/home/{{var_ansible_username}}/oval-definitions-{{ansible_lsb.codename}}.xml.bz2"
-        dest: "/home/{{var_ansible_username}}/"
-        remote_src: yes
+      command: bunzip2 -k /home/{{var_ansible_username}}/oval-definitions-{{ansible_lsb.codename}}.xml.bz2
+      args:
         creates: "/home/{{var_ansible_username}}/oval-definitions-{{ansible_lsb.codename}}.xml"
     - name: OpenSCAP CVE vulnerability scan debian Scan @oscap_oval_eval_debian
       check_mode: no
