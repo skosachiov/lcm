@@ -1,13 +1,8 @@
 - name: Auditd Present deb @auditd_present
   ignore_errors: "{{ansible_check_mode}}"
-  block:
-    - name: Auditd Present deb Package @auditd_present
-      package:
-        name: "{{'auditd' if ansible_pkg_mgr == 'apt' else 'audit'}}"
-        state: present
-    - name: Auditd Present deb Pause @auditd_present
-      pause:
-        seconds: 15
+  package:
+    name: "{{'auditd' if ansible_pkg_mgr == 'apt' else 'audit'}}"
+    state: present
   tags:
     - ws
     - sec
