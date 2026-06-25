@@ -1,8 +1,13 @@
 - name: Auditd Present deb @auditd_present
   ignore_errors: "{{ansible_check_mode}}"
-  package:
-    name: "{{'auditd' if ansible_pkg_mgr == 'apt' else 'audit'}}"
-    state: present
+  block:
+    - name: Auditd Present deb Package @auditd_present
+      package:
+        name: "{{'auditd' if ansible_pkg_mgr == 'apt' else 'audit'}}"
+        state: present
+    - name: Auditd Present deb Pause @auditd_present
+      pause:
+        seconds: 15
   tags:
     - ws
     - sec
@@ -10,8 +15,7 @@
     - auditd_present
 
 - name: Configure auditd max log file @auditd_max_log_file
-  # ignore_errors: "{{ansible_check_mode}}"
-  ignore_errors: true
+  ignore_errors: "{{ansible_check_mode}}"
   block:
     - name: Configure auditd max_log_file @auditd_max_log_file
       lineinfile:
