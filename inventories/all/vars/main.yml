@@ -9,7 +9,8 @@ var_local_domain: si.mi
 var_default_realm: SI.MI
 var_ansible_fqdn: "{{var_ansible_server}}.{{var_local_domain}}"
 
-var_rsyslog_server: "{{var_ansible_fqdn}}"
+# var_rsyslog_server: "{{var_ansible_fqdn}}"
+var_rsyslog_server: "localhost"
 
 var_external_ansible_server: paris-ansible
 var_external_domain: gendarmerie.interieur.gouv.fr
