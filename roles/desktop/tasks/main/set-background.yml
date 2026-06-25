@@ -3,17 +3,17 @@
   block:
     - name: Set desktop background Copy file @set_desktop_background
       copy:
-        src: "{{playbook_dir}}/inventories/all/files/desktop/images/{{var_backgroung_image}}"
+        src: "{{playbook_dir}}/inventories/all/files/desktop/images/{{var_background_image}}"
         dest: /usr/share/backgrounds/
         mode: a+r
     - name: Set desktop background Copy to profile @set_desktop_background
       copy:
         dest: /etc/profile.d/set-desktop-background.sh
-        mode: a+x
+        mode: a+rx
         content: |
           #!/bin/bash
           #
-          gsettings set org.gnome.desktop.background picture-uri file:////usr/share/backgrounds/{{var_backgroung_image}}
+          gsettings set org.gnome.desktop.background picture-uri file:////usr/share/backgrounds/{{var_background_image}}
   tags:
     - ws
     - set_desktop_background
