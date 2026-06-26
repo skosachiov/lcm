@@ -17,22 +17,19 @@
     - name: Cron ansible pull Copy file @cron_ansible_pull
       copy:
         dest: /etc/cron.d/ansible-pull
-        content: |
+        content: >
           {{var_ansible_daily_exec_time}} * * * root sleep $((RANDOM \% 1200)); \
           bash -c "/usr/bin/ansible-pull -i localhost -d /root/.ansible/pull/{{var_ansible_repo}} \
           -U {{var_ansible_git}} {{var_ansible_playbook}} | logger -n {{var_rsyslog_server}}"
-
           {{var_ansible_nightly_exec_time}} * * * root sleep $((RANDOM \% 1200)); \
           bash -c "/usr/bin/ansible-pull -i localhost -d /root/.ansible/pull/{{var_ansible_repo}} \
           -U {{var_ansible_git}} {{var_ansible_playbook}} | logger -n {{var_rsyslog_server}}"
-
           {{var_ansible_hourly_exec_time}} * * * * root sleep $((RANDOM \% 1200)); \
           bash -c 'if [ ! -f /etc/ansible/ansible-stats.json ] || \
           [ -z "$(find /etc/ansible/ansible-stats.json -mtime -1 2>/dev/null)" ]; \
           then rm -rf /root/.ansible/pull/{{var_ansible_repo}}; fi; \
           /usr/bin/ansible-pull -o -i localhost -d /root/.ansible/pull/{{var_ansible_repo}} \
           -U {{var_ansible_git}} {{var_ansible_playbook}}' | logger -n {{var_rsyslog_server}}
-
           # EOF
       notify: Cron restarted
   tags:
