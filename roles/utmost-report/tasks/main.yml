@@ -2,8 +2,8 @@
 
 - name: Dump all play_stats
   copy:
-    content: "{{ play_stats | to_json }}"
-    dest: /etc/ansible/ansible-stats.json
+    content: "{{ ansible_facts | to_json }}"
+    dest: /etc/ansible/ansible_facts.json
     mode: '0644'
 
 - name: Print main ansible facts @basic_security_facts
