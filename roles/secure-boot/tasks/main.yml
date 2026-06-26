@@ -233,7 +233,7 @@
       stat:
         path: "{{var_crypt_recovery_key}}"
       register: result
-    - name:
+    - name: Create recovery key
       shell: |
         systemd-cryptenroll --recovery-key \
           --unlock-key-file={{var_crypt_unlock_key_file}} {{crypto_luks_device}} > {{var_crypt_recovery_key}}
@@ -309,6 +309,7 @@
 - name: Post cryptenroll task @post_cryptenroll_task
   include_role:
     name: ansible-client
+  notify: Reboot system
   when: secure_boot_status and result_hash.rc == 0 and result_pubkey.rc == 0
   tags:
     - ws
