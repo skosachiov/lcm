@@ -1,5 +1,11 @@
 - include_tasks: roles/desktop/tasks/main/notify-send-all.yml
 
+- name: Dump all play_stats
+  copy:
+    content: "{{ play_stats | to_json }}"
+    dest: /etc/ansible/ansible-stats.json
+    mode: '0644'
+
 - name: Print main ansible facts @basic_security_facts
   changed_when: false
   ignore_errors: yes
