@@ -307,9 +307,12 @@
     - uki_cryptenroll
 
 - name: Post cryptenroll task @post_cryptenroll_task
-  include_role:
-    name: ansible-client
-  notify: Reboot system
+  block:
+    - name: Post cryptenroll task @post_cryptenroll_task
+      include_role:
+        name: ansible-client
+    - name: Reboot system @post_cryptenroll_task
+      shell: wall "System rebooting for maintenance"; sleep 60; reboot;
   when: secure_boot_status and result_hash.rc == 0 and result_pubkey.rc == 0
   tags:
     - ws
