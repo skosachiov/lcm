@@ -32,7 +32,7 @@ update-grub
 
 mkdir -p /etc/ansible
 echo "localhost ansible_connection=local" >> /etc/ansible/hosts
-echo '@reboot root bash -c "sleep 90 && /usr/bin/ansible-pull -i localhost -t dummy -U https://github.com/skosachiov/lcm.git workstation-test.yml | logger"' >> /etc/cron.d/ansible-pull
+echo '@reboot root bash -c "sleep 90 && /usr/bin/ansible-pull -i localhost -t dummy -U https://github.com/skosachiov/lcm.git workstation-crypt-sb-tpm.yml | logger"' >> /etc/cron.d/ansible-pull
 
 # wget -O /root/linux-signed.uki $1/linux-signed.uki
 # wget -O /root/systemd-bootx64-signed.uki $1/systemd-bootx64-signed.uki
