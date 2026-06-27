@@ -34,38 +34,8 @@
       tags: always
 
   roles:
-    - role: audit
-    - role: apt
-    - role: ad-client
-    - role: ansible-client
-    - role: antivirus
-    - role: base-security
-    - role: base-system
-    - role: browser
-    - role: common
-    - role: desktop
-    - role: dlp
-    - role: fapolicyd
-    - role: firewall
-    - role: flatpak
-    - role: integrity-check
-    - role: inventory
-    - role: laps
-    - role: mail-client
-    - role: mandatory-access
-    - role: office
-    - role: polkit-restrictions
-    - role: print
-    - role: remote-assistance
-    - role: scap
-    - role: security-modules
     - role: secure-boot
       tags: always
-    - role: smb-client
-    - role: ssh
-    - role: terminal-server
-    - role: unique-tasks
-    - role: utmost-report
 
   post_tasks:
     - name: Debug
