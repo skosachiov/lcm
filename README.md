@@ -120,7 +120,7 @@ This role installs and configures a free antivirus suite to run in on-access sca
 
 ## apt
 
-Apt role controls all packagets on a workstation or mobile device, installs Security task checks repos fingerprints.
+Apt role controls all packages on a workstation or mobile device, installs Security task checks repos fingerprints.
 
 ## audit
 
@@ -152,7 +152,7 @@ Obviously, the resources of a large enterprise must be protected from leaks. The
 
 ## fapolicyd
 
-The ansible-controlled version of fapolisyd is an analogue of Applocker on the Windows platform. In addition to the Applocker functions Fapolicy can use file digital signature in combination with IMA/SELinux. In this project, the default fapolicyd role behavior is:
+The ansible-controlled version of fapolicyd is an analogue of Applocker on the Windows platform. In addition to the Applocker functions Fapolicy can use file digital signature in combination with IMA/SELinux. In this project, the default fapolicyd role behavior is:
 - install fapolicyd
 - use whitelist executables using dpkg or rpm database
 - use whitelist executables using ansible updated fapolicyd.trust
