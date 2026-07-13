@@ -16,13 +16,11 @@ server {
     location ~ ^/git(/.*) {
         gzip off;
 
-        # We wrap the Nginx regex variables in 'raw' tags so Ansible ignores them
+        # Automatically strips out the .git extension if the user includes it in their clone URL
+        # The 'break' flag stops processing more rewrite rules but stays inside this location block
         {% raw %}
+        rewrite ^/git/(.*)\.git(.*)$ /git/$1$2 break;
         set $clean_path_info $1;
-
-        if ($1 ~ "^/([^/]+)\.git(.*)$") {
-            set $clean_path_info /$1$2;
-        }
         {% endraw %}
 
         fastcgi_pass unix:{{ var_dp_fcgi_socket }};
@@ -34,4 +32,3 @@ server {
         include fastcgi_params;
     }
 }
-
