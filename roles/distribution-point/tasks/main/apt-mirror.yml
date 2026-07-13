@@ -15,7 +15,7 @@
         dest: /var/spool/apt-mirror/var/postmirror.sh
         block: |
           chmod -R a+rx /var/spool/apt-mirror/mirror/*
-      ignore_errors: yes
+      ignore_errors: true
     - name: Apt-mirror config Replace @apt_mirror_config
       blockinfile:
         dest: /etc/cron.d/apt-mirror
