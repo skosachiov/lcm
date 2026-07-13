@@ -1,5 +1,5 @@
 var_dp_git_root: /var/www/git
 var_dp_ssl_certificate: /etc/ssl/certs/ssl-cert-snakeoil.pem
-var_dp_ssl_certificate_key: /etc/ssl/certs/ssl-cert-snakeoil.key
+var_dp_ssl_certificate_key: /etc/ssl/private/ssl-cert-snakeoil.key
 var_dp_ssl_common_name: "{{ ansible_fqdn | default('git-server') }}"
 var_dp_fcgi_socket: /var/run/fcgiwrap.socket

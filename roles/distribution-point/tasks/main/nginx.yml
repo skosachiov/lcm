@@ -11,6 +11,35 @@
     - sec
     - install_nginx_req    
 
+- name: Install nginx certs @create_nginx_certs
+  block:
+    - name: Install required packages
+      apt:
+        name:
+          - "ssl-cert"
+        state: present
+      register: result
+    - name: Check if snakeoil private key exists
+      stat:
+        path: /etc/ssl/private/ssl-cert-snakeoil.key
+      register: snakeoil_key
+    - name: Touch missing private key with secure system permissions
+      file:
+        path: /etc/ssl/private/ssl-cert-snakeoil.key
+        state: touch
+        owner: root
+        group: ssl-cert
+        mode: '0640'
+      when: not snakeoil_key.stat.exists
+    - name: Generate default snakeoil SSL certificates
+      command:
+        cmd: make-ssl-cert generate-default-snakeoil --force-overwrite
+      when: result.changed or not snakeoil_key.stat.exists
+  tags:
+    - dp
+    - sec
+    - create_nginx_certs
+
 - name: Create git repos root @create_nginx_git_repo
   file:
     path: "{{ var_dp_git_root }}"
