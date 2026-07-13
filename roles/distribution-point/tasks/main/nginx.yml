@@ -1,4 +1,4 @@
-- name: Install required packages
+- name: Install required packages @install_nginx_req
   apt:
     name:
       - nginx
@@ -6,37 +6,61 @@
       - spawn-fcgi
       - apache2-utils
     state: present
+  tags:
+    - dp
+    - sec
+    - install_nginx_req    
 
-- name: Create git repos root
+- name: Create git repos root @create_nginx_git_repo
   file:
     path: "{{ var_dp_git_root }}"
     state: directory
     owner: www-data
     group: www-data
     mode: "0755"
+  tags:
+    - dp
+    - sec
+    - create_nginx_git_repo
 
-- name: Configure safe.directory for www-data
+- name: Configure safe.directory for www-data @config_nginx_git_repo
   git_config:
     name: safe.directory
     value: "{{ var_dp_git_root }}/*"
     scope: system
-
-- name: Deploy nginx site config
+  tags:
+    - dp
+    - sec
+    - config_nginx_git_repo
+    
+- name: Deploy nginx site config @deploy_nginx_site
   template:
     src: git-http.conf.j2
     dest: /etc/nginx/sites-available/git-http
-  notify: reload nginx
+  notify: Nginx reloaded
+  tags:
+    - dp
+    - sec
+    - deploy_nginx_site
 
-- name: Enable git-http site
+- name: Enable git-http site @enable_nginx_site
   file:
     src: /etc/nginx/sites-available/git-http
     dest: /etc/nginx/sites-enabled/git-http
     state: link
   notify: Nginx reloaded
+  tags:
+    - dp
+    - sec
+    - enable_nginx_site
 
-- name: Start fcgiwrap service
+- name: Start fcgiwrap service @start_fcgiwrap
   command: spawn-fcgi -s {{ var_dp_fcgi_socket }} -M 766 /usr/sbin/fcgiwrap
   args:
     creates: "{{ var_dp_fcgi_socket }}"
   register: fcgi_result
   changed_when: fcgi_result.rc == 0 and fcgi_result.stdout is search("spawned")
+  tags:
+    - dp
+    - sec
+    - start_fcgiwrap
