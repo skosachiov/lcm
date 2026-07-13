@@ -16,11 +16,13 @@ server {
     location ~ ^/git(/.*) {
         gzip off;
 
-        # Automatically strips out the .git extension if the user includes it in their clone URL
-        # The 'break' flag stops processing more rewrite rules but stays inside this location block
         {% raw %}
+        set $saved_path $1;
         rewrite ^/git/(.*)\.git(.*)$ /git/$1$2 break;
-        set $clean_path_info $1;
+        set $clean_path_info $saved_path;
+        if ($saved_path ~ "^/([^/]+)\.git(.*)$") {
+            set $clean_path_info /$1$2;
+        }
         {% endraw %}
 
         fastcgi_pass unix:{{ var_dp_fcgi_socket }};
