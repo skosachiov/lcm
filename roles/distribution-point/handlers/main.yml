@@ -1,3 +1,8 @@
+- name: Nginx reloaded
+  service:
+    name: nginx
+    state: reloaded
+
 - name: Apache restarted
   service:
     name: apache2

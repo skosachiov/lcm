@@ -1,0 +1,42 @@
+- name: Install required packages
+  apt:
+    name:
+      - nginx
+      - fcgiwrap
+      - spawn-fcgi
+      - apache2-utils
+    state: present
+
+- name: Create git repos root
+  file:
+    path: "{{ var_dp_git_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+
+- name: Configure safe.directory for www-data
+  git_config:
+    name: safe.directory
+    value: "{{ var_dp_git_root }}/*"
+    scope: system
+
+- name: Deploy nginx site config
+  template:
+    src: git-http.conf.j2
+    dest: /etc/nginx/sites-available/git-http
+  notify: reload nginx
+
+- name: Enable git-http site
+  file:
+    src: /etc/nginx/sites-available/git-http
+    dest: /etc/nginx/sites-enabled/git-http
+    state: link
+  notify: Nginx reloaded
+
+- name: Start fcgiwrap service
+  command: spawn-fcgi -s {{ var_dp_fcgi_socket }} -M 766 /usr/sbin/fcgiwrap
+  args:
+    creates: "{{ var_dp_fcgi_socket }}"
+  register: fcgi_result
+  changed_when: fcgi_result.rc == 0 and fcgi_result.stdout is search("spawned")
