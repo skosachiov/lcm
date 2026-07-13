@@ -16,13 +16,14 @@ server {
     location ~ ^/git(/.*) {
         gzip off;
 
-        # Safely capture the path info
+        # We wrap the Nginx regex variables in 'raw' tags so Ansible ignores them
+        {% raw %}
         set $clean_path_info $1;
 
-        # If the request contains '.git', strip it out so Git handles the bare repo path correctly
         if ($1 ~ "^/([^/]+)\.git(.*)$") {
             set $clean_path_info /$1$2;
         }
+        {% endraw %}
 
         fastcgi_pass unix:{{ var_dp_fcgi_socket }};
         fastcgi_param SCRIPT_FILENAME /usr/lib/git-core/git-http-backend;
@@ -33,3 +34,4 @@ server {
         include fastcgi_params;
     }
 }
+
