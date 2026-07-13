@@ -16,11 +16,19 @@ server {
     location ~ ^/git(/.*) {
         gzip off;
 
+        # Safely capture the path info
+        set $clean_path_info $1;
+
+        # If the request contains '.git', strip it out so Git handles the bare repo path correctly
+        if ($1 ~ "^/([^/]+)\.git(.*)$") {
+            set $clean_path_info /$1$2;
+        }
+
         fastcgi_pass unix:{{ var_dp_fcgi_socket }};
         fastcgi_param SCRIPT_FILENAME /usr/lib/git-core/git-http-backend;
         fastcgi_param GIT_HTTP_EXPORT_ALL "";
         fastcgi_param GIT_PROJECT_ROOT {{ var_dp_git_root }};
-        fastcgi_param PATH_INFO $1;
+        fastcgi_param PATH_INFO $clean_path_info;
         fastcgi_param REMOTE_USER $remote_user;
         include fastcgi_params;
     }
