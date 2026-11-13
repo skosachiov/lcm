@@ -1,0 +1,25 @@
+iputils-ping (<< 20210202)
+# explicitly removed from trixie
+deborphan
+tldr
+tpp
+# deprecated
+fcitx
+fcitx-bin
+fcitx-data
+fcitx-modules
+fcitx-config-common
+fcitx-frontend-all
+fcitx-frontend-gtk2
+fcitx-frontend-gtk3
+fcitx-frontend-qt5
+fcitx-module-dbus
+fcitx-module-x11
+fcitx-unikey
+lxd
+lxd-client
+lxd-tools
+isc-dhcp-client
+isc-dhcp-server
+# obsolete
+libglib2.0-0 (<< 2.80)

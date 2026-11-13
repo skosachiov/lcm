@@ -1,0 +1,13 @@
+git
+vim
+tmux
+htop
+tree
+jq
+build-essential
+python3-venv
+python3-pip
+ipython3
+gdb
+strace
+lsof

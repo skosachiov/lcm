@@ -1,0 +1,11 @@
+openssh-server
+openssh-client
+fail2ban
+ufw
+auditd
+rsyslog
+chrony
+ca-certificates
+gnupg
+python3-apt
+python3-psutil

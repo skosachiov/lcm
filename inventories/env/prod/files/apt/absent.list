@@ -1,0 +1,17 @@
+git
+vim
+tmux
+htop
+tree
+jq
+build-essential
+python3-venv
+ipython3
+gdb
+strace
+lsof
+snapd
+telnet
+ftp
+vim (<< 9.0)
+python3-pip (<< 22.0)

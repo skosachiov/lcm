@@ -1,0 +1,5 @@
+cups
+avahi-daemon
+bluetooth
+modemmanager
+sqlite3 (<< 3.37)

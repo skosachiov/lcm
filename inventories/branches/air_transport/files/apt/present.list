@@ -1,0 +1,9 @@
+openssh-server
+rsync
+nfs-common
+cifs-utils
+gpsd (>= 3.22)
+gpsd-clients
+chrony
+python3-serial
+sqlite3
