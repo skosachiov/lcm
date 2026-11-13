@@ -123,6 +123,182 @@ This role installs and configures a free antivirus suite to run in on-access sca
 
 Apt role controls all packages on a workstation or mobile device, installs Security task checks repos fingerprints.
 
+APT package lists are automatically merged from multiple inventory levels to produce two final lists:
+
+- `var_apt_present` — packages to install.
+- `var_apt_absent` — packages to remove.
+
+Each inventory directory can contain:
+
+```
+files/apt/present.list
+files/apt/absent.list
+```
+
+### Inventory Precedence
+
+Inventory levels are processed from lowest to highest priority:
+
+| Priority | Level          | Description                                     |
+| -------- | -------------- | ----------------------------------------------- |
+| 1        | `all`          | Global package configuration                    |
+| 2        | `branches`     | Organization branch                             |
+| 3        | `domains`      | Domain-specific configuration                   |
+| 4        | `subnets`      | Network-specific configuration                  |
+| 5        | `env`          | Environment configuration                       |
+| 6        | `profiles`     | Workstation profile configuration               |
+| 7        | `distribution` | Distribution and version-specific configuration |
+
+Each level may contain multiple active directories.
+
+For example:
+
+```
+inventories/
+├── all/
+├── branches/
+│   ├── air_transport/
+│   └── air_force/
+├── domains/
+│   ├── green.si.mi/
+│   └── red.si.mi/
+├── subnets/
+│   ├── runner/
+│   └── amiens_18_cours_jeanne_darc/
+├── env/
+│   ├── prod/
+│   ├── stage/
+│   └── devel/
+├── profiles/
+│   ├── admin/
+│   └── superadmin/
+└── distribution/
+    ├── Debian/
+    │   ├── 12/
+    │   └── 13/
+    └── Ubuntu/
+        ├── 24/
+        └── 26/
+```
+
+Only applicable inventory directories participate in merging. Missing `.list` files are ignored.
+
+### Merge Rules
+
+1. **Higher priority wins.** Rules from higher-priority levels override lower-priority levels.
+2. **Absent wins within a level.** All `present.list` files are processed before all `absent.list` files belonging to the same level.
+3. **Packages are matched by name.** Version constraints are ignored during package identity comparison.
+4. **Original formatting is preserved.** The winning entry retains its version operator, version number, and parentheses.
+5. **Duplicates are eliminated.** Each package appears only once in the final configuration.
+6. **Comments and empty lines are ignored.**
+7. **Same-state conflicts within a level** are resolved by the configured directory processing order. The last matching entry wins.
+
+### Version Constraints
+
+Package lists support Debian dependency-style version operators:
+
+| Operator | Meaning               |
+| -------- | --------------------- |
+| `<<`     | Less than             |
+| `<=`     | Less than or equal    |
+| `=`      | Exactly equal         |
+| `>=`     | Greater than or equal |
+| `>>`     | Greater than          |
+
+Example `present.list`:
+
+```
+curl (>= 9.0)
+vim (<< 10.0)
+nano
+gcc (>= 12.0)
+git (= 2.47.0)
+```
+
+Version constraints are preserved exactly as specified but are not mathematically combined during merging.
+
+### Merge Example
+
+**1. Global configuration**
+
+`inventories/all/files/apt/present.list`
+
+```
+curl (>= 8.0)
+vim
+nano
+firefox
+```
+
+**2. Administrator profile**
+
+`inventories/profiles/admin/files/apt/absent.list`
+
+```
+firefox
+nano
+```
+
+**3. Superadministrator profile**
+
+`inventories/profiles/superadmin/files/apt/present.list`
+
+```
+firefox
+curl (>= 9.0)
+```
+
+Both `admin` and `superadmin` belong to the same `profiles` priority level.
+
+Therefore, `firefox` remains absent at this level because `absent` takes precedence over `present`.
+
+**4. Distribution configuration**
+
+`inventories/distribution/Ubuntu/26/files/apt/present.list`
+
+```
+firefox
+curl (>= 9.5)
+```
+
+The `distribution` level has higher priority than `profiles`, so its rules override previous decisions.
+
+### Final Result
+
+```
+var_apt_present:
+  - curl (>= 9.5)
+  - firefox
+  - vim
+
+var_apt_absent:
+  - nano
+```
+
+**Explanation:**
+
+- `curl` — version requirement replaced by `>= 9.5` from the distribution level.
+- `firefox` — restored by the distribution level despite being removed by the admin profile.
+- `vim` — retained from the global configuration.
+- `nano` — removed by the profiles level because no higher-priority rule overrides it.
+
+### Implementation Details
+
+- Merging operates independently for each host.
+- Only active inventory directories are processed.
+- Package identity is determined by package name, not version.
+- Package specifications retain their original formatting.
+- Output lists are sorted alphabetically.
+- The merge is deterministic and idempotent.
+- Compatible with Ansible check mode (`--check`).
+- Requires only `ansible-core` functionality.
+
+The merge process does not install or remove packages. It only generates the final `var_apt_present` and `var_apt_absent` variables.
+
+**Note:** Debian dependency-style version constraints may require additional processing before passing entries directly to `ansible.builtin.apt`.
+
+Add a quick usage exampleDocument the directory selection mechanism
+
 ## audit
 
 A fairly large role is devoted to setting up an audit. Information security audit is configured in immutable mode, that is, changes require reboot. Additional control is exercised by counting active rules. If the rules are not loaded, the information security officer receives a warning message.

@@ -544,3 +544,164 @@
     state: absent
   register: grub_nondefault
   tags: always
+
+
+# Build merged APT package lists
+
+- name: Build merged APT package lists @default
+  when: ansible_facts['os_family'] == 'Debian'
+  tags: always
+  block:
+
+    # Lowest -> highest priority
+    # Each level may contain multiple active directories
+    - name: Define APT inventory levels @default
+      ansible.builtin.set_fact:
+        _apt_levels:
+          - name: all
+            paths: ['all']
+
+          - name: branches
+            paths: "{{ ['branches/' ~ (var_company | lower)] if var_company | default('') | length > 0 else [] }}"
+
+          - name: domains
+            paths: "{{ ['domains/' ~ (var_local_domain | lower)] if var_local_domain | default('') | length > 0 else [] }}"
+
+          - name: subnets
+            paths: "{{ ['subnets/' ~ var_subnet] if var_subnet | default('') | length > 0 else [] }}"
+
+          - name: env
+            paths: >-
+              {{
+                (['env/' ~ var_environment] if var_environment | default('') | length > 0 else [])
+                + (['env/devel'] if var_devel_workstation | default(false) | bool else [])
+              }}
+
+          - name: profiles
+            paths: >-
+              {{
+                (['profiles/admin'] if var_admin_workstation | default(false) | bool else [])
+                + (['profiles/superadmin'] if var_superadmin_workstation | default(false) | bool else [])
+              }}
+
+          - name: distribution
+            paths:
+              - "distribution/{{ ansible_facts['distribution'] }}/{{ ansible_facts['distribution_major_version'] }}"
+
+    # For each level:
+    # 1. Process ALL present files
+    # 2. Process ALL absent files
+    #
+    # This ensures absent wins within the entire level.
+    - name: Generate ordered APT rule sources @default
+      ansible.builtin.set_fact:
+        _apt_sources: >-
+          {%- set ns = namespace(sources=[]) -%}
+          {%- for level in _apt_levels -%}
+            {%- for state in ['present', 'absent'] -%}
+              {%- for path in level.paths | unique -%}
+                {%- set _ = ns.sources.append({
+                  'level': level.name,
+                  'path': path,
+                  'state': state
+                }) -%}
+              {%- endfor -%}
+            {%- endfor -%}
+          {%- endfor -%}
+          {{ ns.sources }}
+
+    - name: Initialize merged APT rules @default
+      ansible.builtin.set_fact:
+        _apt_package_rules: {}
+
+    # Validate original Debian dependency format
+    - name: Validate APT entries @default
+      ansible.builtin.assert:
+        that:
+          - (_apt_entries | reject('match', _apt_entry_pattern) | list | length) == 0
+        fail_msg: >-
+          Invalid entries in {{ _apt_file }}:
+          {{ _apt_entries | reject('match', _apt_entry_pattern) | list }}
+        quiet: true
+      vars:
+        _apt_file: "{{ playbook_dir }}/inventories/{{ item.path }}/files/apt/{{ item.state }}.list"
+
+        _apt_entries: >-
+          {{
+            lookup('ansible.builtin.file', _apt_file).splitlines()
+            | map('regex_replace', '#.*$', '')
+            | map('trim')
+            | reject('equalto', '')
+            | list
+          }}
+
+        _apt_entry_pattern: '^[a-z0-9][a-z0-9+.-]*(?::[a-z0-9-]+)?(?:\s*\(\s*(?:<<|<=|=|>=|>>)\s*[^()\s]+\s*\))?$'
+
+      loop: "{{ _apt_sources }}"
+      loop_control:
+        label: "{{ item.level }}: {{ item.path }}/{{ item.state }}.list }}"
+      when: query('ansible.builtin.fileglob', _apt_file) | length > 0
+
+    # Merge by package name.
+    # Retain the full original package specification.
+    # Later rules override earlier rules.
+    - name: Merge APT rules @default
+      ansible.builtin.set_fact:
+        _apt_package_rules: "{{ _apt_package_rules | combine(_apt_updates) }}"
+      vars:
+        _apt_file: "{{ playbook_dir }}/inventories/{{ item.path }}/files/apt/{{ item.state }}.list"
+
+        _apt_entries: >-
+          {{
+            lookup('ansible.builtin.file', _apt_file).splitlines()
+            | map('regex_replace', '#.*$', '')
+            | map('trim')
+            | reject('equalto', '')
+            | list
+          }}
+
+        _apt_updates: >-
+          {%- set ns = namespace(rules={}) -%}
+          {%- for entry in _apt_entries -%}
+            {%- set pkg = entry.split('(')[0] | trim -%}
+            {%- set _ = ns.rules.update({
+              pkg: {
+                'state': item.state,
+                'entry': entry
+              }
+            }) -%}
+          {%- endfor -%}
+          {{ ns.rules }}
+
+      loop: "{{ _apt_sources }}"
+      loop_control:
+        label: "{{ item.level }}: {{ item.path }}/{{ item.state }}.list }}"
+      when: query('ansible.builtin.fileglob', _apt_file) | length > 0
+
+    # Export final lists, preserving original format
+    - name: Export final APT package lists @default
+      ansible.builtin.set_fact:
+        var_apt_present: >-
+          {{
+            _apt_package_rules | dict2items
+            | selectattr('value.state', 'equalto', 'present')
+            | map(attribute='value.entry')
+            | sort | list
+          }}
+
+        var_apt_absent: >-
+          {{
+            _apt_package_rules | dict2items
+            | selectattr('value.state', 'equalto', 'absent')
+            | map(attribute='value.entry')
+            | sort | list
+          }}
+
+    - name: Print merged APT package summary @default
+      ansible.builtin.debug:
+        msg:
+          levels: "{{ _apt_levels }}"
+          present_count: "{{ var_apt_present | length }}"
+          absent_count: "{{ var_apt_absent | length }}"
+          present: "{{ var_apt_present }}"
+          absent: "{{ var_apt_absent }}"
