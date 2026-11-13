@@ -5,6 +5,12 @@
         name:
           - gnome-core
         state: present
+      when: ansible_os_family in ["Debian", "RedHat"]
+    - name: Install GNOME on RHEL-based systems @install_gnome_core
+      dnf:
+        name: "@Workstation"
+        state: present
+      when: ansible_os_family in ['RedHat', 'Rocky']
     - name: Set default to graphical target @install_gnome_core
       command: systemctl set-default graphical.target
   when:
