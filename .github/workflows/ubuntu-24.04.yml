@@ -1,6 +1,7 @@
 name: ubuntu-24.04
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*"

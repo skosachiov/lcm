@@ -1,6 +1,7 @@
 name: rocky-10
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*"
