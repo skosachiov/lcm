@@ -27,7 +27,7 @@
       systemd:
         name: ansible-pull.timer
         state: started
-        enabled: yes
+        enabled: true
   tags:
     - ws
     - ansible_pull_systemd_service

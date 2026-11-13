@@ -160,7 +160,7 @@
       copy:
         src: /tmp/artifact/linux-signed.uki
         dest: /boot/efi/EFI/debian/{{var_uki_filename}}
-        remote_src: yes
+        remote_src: true
         mode: '0644'
       when: not uki_file.stat.exists
     - name: Copy BOOTX64.CSV
@@ -174,7 +174,7 @@
       copy:
         src: /tmp/artifact/systemd-bootx64-signed.efi
         dest: /usr/lib/systemd/boot/efi/{{ item }}
-        remote_src: yes
+        remote_src: true
         mode: '0600'
       when: not sb_file.stat.exists
       loop:
@@ -184,7 +184,7 @@
       copy:
         src: /usr/lib/systemd/boot/efi/systemd-bootx64-signed.efi
         dest: /boot/efi/EFI/systemd/systemd-bootx64.efi
-        remote_src: yes
+        remote_src: true
         mode: '0600'
   when: var_secure_boot
   tags:

@@ -4,7 +4,7 @@
     - name: Remount tmp and home with noexec Edit rc.local @remount_with_safe_options
       blockinfile:
         dest: /etc/rc.local
-        create: yes
+        create: true
         mode: u=rwx,g=x,o=x
         owner: root
         marker_begin: BEGIN_REMOUNT
@@ -43,7 +43,7 @@
   ignore_errors: "{{ansible_check_mode}}"
   blockinfile:
     dest: /etc/rc.local
-    create: yes
+    create: true
     mode: u=rwx,g=x,o=x
     owner: root
     marker_begin: BEGIN_HIDEPID

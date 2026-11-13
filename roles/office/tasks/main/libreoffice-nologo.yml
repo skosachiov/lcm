@@ -12,7 +12,7 @@
           - "/home"
           - "/usr/share/applications"
         patterns: "libreoffice*.desktop"
-        recurse: yes
+        recurse: true
       register: result
     - name: Libreoffice nologo Replace @libreoffice_nologo
       replace:

@@ -7,7 +7,7 @@
 - name: Apt update cache
   failed_when: false
   apt:
-    update_cache: yes
+    update_cache: true
 
 - name: Cron restarted
   ignore_errors: "{{ansible_check_mode}}"

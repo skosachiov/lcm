@@ -37,7 +37,7 @@
     - name: Users desktop files Find home @users_desktop_files
       find:
         paths: /home
-        recurse: yes
+        recurse: true
         depth: 2
         patterns: "Desktop"
         file_type: any
@@ -49,7 +49,7 @@
         mode: go+r
         force: false
         owner: "{{item.1.path.split('/')[2]}}"
-        remote_src: yes
+        remote_src: true
       with_nested:
         - "{{desktop_files.files}}"
         - "{{desktopdirs.files}}"

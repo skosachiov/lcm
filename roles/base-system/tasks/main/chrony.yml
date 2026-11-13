@@ -79,7 +79,7 @@
       find:
         path: /etc/chrony
         file_type: file
-        recurse: yes
+        recurse: true
       register: result
     - name: Ensure permission 0644 on /etc/chrony/chrony.conf Chmod @file_0644_chrony_conf
       file:

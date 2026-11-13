@@ -1,5 +1,5 @@
 - name: Notify all users @notify_all_users
-  ignore_errors: yes
+  ignore_errors: true
   block:
     - name: Notify all users List @notify_all_users
       changed_when: false

@@ -5,7 +5,7 @@
     value: '1'
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   tags:
     - ws
     - sec
@@ -19,7 +19,7 @@
     value: '0'
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   tags:
     - ws
     - sec
@@ -32,7 +32,7 @@
     value: '2'
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   tags:
     - ws
     - sec
@@ -47,28 +47,28 @@
         value: 0
         state: present
         reload: true
-        ignoreerrors: yes
+        ignoreerrors: true
     - name: Ensure sysctl net.ipv4.conf.default.accept_source_route @sysctl_accept_source_route_0
       sysctl:
         name: net.ipv4.conf.default.accept_source_route
         value: 0
         state: present
         reload: true
-        ignoreerrors: yes
+        ignoreerrors: true
     - name: Ensure sysctl net.ipv6.conf.all.accept_source_route @sysctl_accept_source_route_0
       sysctl:
         name: net.ipv6.conf.all.accept_source_route
         value: 0
         state: present
         reload: true
-        ignoreerrors: yes
+        ignoreerrors: true
     - name: Ensure sysctl net.ipv6.conf.default.accept_source_route @sysctl_accept_source_route_0
       sysctl:
         name: net.ipv6.conf.default.accept_source_route
         value: 0
         state: present
         reload: true
-        ignoreerrors: yes
+        ignoreerrors: true
   tags:
     - ws
     - sec
@@ -81,7 +81,7 @@
     value: 1
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   tags:
     - ws
     - sec
@@ -94,7 +94,7 @@
     value: 1
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   tags:
     - ws
     - sec
@@ -107,7 +107,7 @@
     value: 1
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   tags:
     - ws
     - sec
@@ -120,7 +120,7 @@
     value: 1
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   tags:
     - ws
     - sec
@@ -135,14 +135,14 @@
         value: "{{'1' if var_programmer_workstation else '0'}}"
         state: present
         reload: true
-        ignoreerrors: yes
+        ignoreerrors: true
     - name: Ensure sysctl net ip forward is set to 0 ipv6 @sysctl_disable_net_forward
       sysctl:
         name: net.ipv6.conf.all.forwarding
         value: '0'
         state: present
         reload: true
-        ignoreerrors: yes
+        ignoreerrors: true
   tags:
     - ws
     - sec
@@ -156,14 +156,14 @@
       sysctl:
         name: net.ipv4.conf.all.log_martians
         value: '1'
-        reload: yes
-        ignoreerrors: yes
+        reload: true
+        ignoreerrors: true
     - name: Logging martian packets Default @logging_martian_packets
       sysctl:
         name: net.ipv4.conf.default.log_martians
         value: '1'
-        reload: yes
-        ignoreerrors: yes
+        reload: true
+        ignoreerrors: true
   tags:
     - ws
     - sec
@@ -176,7 +176,7 @@
     value: "{{item.1}}"
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   when: var_devel_workstation
   loop:
     - ['kernel.kptr_restrict', '2']

@@ -84,7 +84,7 @@
         src: /var/spool/apt-mirror/mirror/{{var_ansible_fqdn}}/focal
         dest: /var/www/html/focal
         state: link
-        force: yes
+        force: true
   when: ansible_lsb.codename == 'focal'
   tags:
     - dp

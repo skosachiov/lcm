@@ -10,7 +10,7 @@
       failed_when: false
       service:
         name: connman
-        masked: yes
+        masked: true
       notify: Networking restarted
     - name: Connman wait online masked Stop @connman_masked
       failed_when: false
@@ -21,7 +21,7 @@
       failed_when: false
       service:
         name: connman-wait-online
-        masked: yes
+        masked: true
       notify: Networking restarted
   tags:
     - ws
@@ -56,7 +56,7 @@
       failed_when: false
       service:
         name: apt-daily.timer
-        masked: yes
+        masked: true
   tags:
     - ws
     - apt_daily_masked

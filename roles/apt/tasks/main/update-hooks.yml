@@ -21,13 +21,13 @@
   shell: "dpkg --remove --force-all {{item}}"
   when: (ansible_facts.packages[item] is defined) and (ansible_facts.packages[item][0].version == var_pkg_versions_absent[item])
   with_items: "{{var_pkg_versions_absent.keys() | list}}"
-  ignore_errors: yes
+  ignore_errors: true
   tags:
     - ws
     - remove_pkg_specific_version
 
 - name: Present specific package versions @present_pkg_specific_version
-  ignore_errors: yes
+  ignore_errors: true
   package:
     name: "{{item}}"
     state: present

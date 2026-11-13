@@ -2,8 +2,8 @@
   sysctl:
     name: net.ipv4.tcp_mtu_probing
     value: '2'
-    reload: yes
-    ignoreerrors: yes
+    reload: true
+    ignoreerrors: true
   when: var_devel_workstation
   tags:
     - ws

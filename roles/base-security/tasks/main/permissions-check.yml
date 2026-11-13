@@ -44,7 +44,7 @@
     path: /etc/grub.d/
     group: '0'
     mode: '0700'
-    recurse: yes
+    recurse: true
   when:
   tags:
     - ws
@@ -58,7 +58,7 @@
       find:
         path: /usr/share/zoneinfo
         file_type: file
-        # recurse: yes
+        # recurse: true
       register: result
     - name: Ensure permissions on /usr/share/zoneinfo @usr_share_zoneinfo_perm
       file:
@@ -80,7 +80,7 @@
       find:
         path: /etc/audit
         file_type: file
-        recurse: yes
+        recurse: true
       register: result
     - name: Ensure permissions on /etc/audit Chmod @etc_audit_perm
       file:
@@ -101,7 +101,7 @@
       find:
         path: /var/log/audit
         file_type: file
-        recurse: yes
+        recurse: true
       register: result
     - name: Ensure permissions on /var/log/audit Chmod @var_log_audit_perm
       file:
@@ -123,7 +123,7 @@
         paths: /var/log
         file_type: file
         excludes: "{{var_log_skip_permissions_check}}"
-        recurse: yes
+        recurse: true
       register: result
     - name: Ensure permissions on /var/log Check @var_log_perm
       file:
@@ -391,7 +391,7 @@
     mode: g-w,o-w
     owner: root
     group: lp
-    recurse: yes
+    recurse: true
   tags:
     - ws
     - sec
@@ -404,7 +404,7 @@
     mode: g-w,o-w
     owner: root
     group: root
-    recurse: yes
+    recurse: true
   tags:
     - ws
     - sec
@@ -435,7 +435,7 @@
   block:
     - name: Check shadow group users Group file @check_shadow_group_users
       failed_when: false
-      check_mode: yes
+      check_mode: true
       lineinfile:
         path: /etc/group
         create: no
@@ -444,7 +444,7 @@
         state: present
     - name: Check shadow group users Passwd file @check_shadow_group_users
       failed_when: false
-      check_mode: yes
+      check_mode: true
       lineinfile:
         path: /etc/passwd
         create: no

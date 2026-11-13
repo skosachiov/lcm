@@ -1,6 +1,6 @@
 - name: Check lpadmin group @check_lpadmin_group
   ignore_errors: "{{ansible_check_mode}}"
-  check_mode: yes
+  check_mode: true
   changed_when: false # workaround
   replace:
     dest: /etc/group

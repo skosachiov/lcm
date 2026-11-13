@@ -10,7 +10,7 @@
     - add_share_apps_desktop
 
 - name: Autostart desktop file @autostart_link_desktop
-  ignore_errors: yes
+  ignore_errors: true
   block:
     - name: Autostart desktop file Copy @autostart_link_desktop
       copy:

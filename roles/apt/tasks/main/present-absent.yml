@@ -71,7 +71,7 @@
       - ntfs-3g
       - python3-apt
     state: latest
-  ignore_errors: yes
+  ignore_errors: true
   tags:
     - ws
     - packages_are_installed

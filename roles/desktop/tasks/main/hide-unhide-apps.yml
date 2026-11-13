@@ -50,7 +50,7 @@
       find:
         paths: /usr/share/applications
         patterns: "*.desktop"
-        recurse: yes
+        recurse: true
       register: result
     - name: Hide unused desktop apps share Hide @hide_unused_desktop_apps_share
       lineinfile:
@@ -72,7 +72,7 @@
       find:
         paths: /usr/share/applications
         patterns: "*.desktop"
-        recurse: yes
+        recurse: true
       register: result
     - name: Unhide unused desktop apps share Unhide @unhide_desktop_apps_share
       lineinfile:

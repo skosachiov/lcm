@@ -12,7 +12,7 @@
       file:
         path: /usr/local/share/fonts
         mode: go+r
-        recurse: yes
+        recurse: true
     - name: Install additional fonts Update cache @install_additional_fonts
       command: fc-cache -f
       when: result.changed

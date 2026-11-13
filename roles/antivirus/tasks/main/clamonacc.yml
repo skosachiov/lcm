@@ -13,10 +13,10 @@
     - clamav_onacc_service
 
 - name: Clamav onacc enabled @clamav_onacc_enabled
-  ignore_errors: yes
+  ignore_errors: true
   service:
     name: clamav-onacc
-    enabled: yes
+    enabled: true
   when: ansible_pkg_mgr == 'apt'
   tags:
     - ws

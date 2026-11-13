@@ -1,6 +1,6 @@
 - name: Cron daily @cron_daily
   changed_when: false
-  ignore_errors: yes
+  ignore_errors: true
   command: 'logger "cron_daily: you are here"'
   tags:
     - ws

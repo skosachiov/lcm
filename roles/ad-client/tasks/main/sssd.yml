@@ -22,7 +22,7 @@
   ignore_errors: "{{ansible_check_mode}}"
   service:
     name: sssd
-    enabled: yes
+    enabled: true
   tags:
     - ws
     - sssd_service_enabled
@@ -31,7 +31,7 @@
   ignore_errors: "{{ansible_check_mode}}"
   service:
     name: sssd-kcm
-    enabled: yes
+    enabled: true
   tags:
     - ws
     - sssd_kcm_service_enabled    

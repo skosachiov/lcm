@@ -2,7 +2,7 @@
   check_mode: no
   changed_when: false
   shell: 'dpkg --configure -a'
-  ignore_errors: yes
+  ignore_errors: true
   when: ansible_pkg_mgr == 'apt'
   tags:
     - ws

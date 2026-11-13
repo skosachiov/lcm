@@ -11,7 +11,7 @@
     - copy_apps_desktop_files
 
 - name: Autostart desktop file @autostart_link_desktop
-  ignore_errors: yes
+  ignore_errors: true
   block:
     - name: Autostart desktop file Copy @autostart_link_desktop
       copy:

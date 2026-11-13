@@ -1,6 +1,6 @@
 - name: Cron hourly @cron_hourly
   changed_when: false
-  ignore_errors: yes
+  ignore_errors: true
   command: 'logger "cron_hourly: you are here"'
   tags:
     - ws

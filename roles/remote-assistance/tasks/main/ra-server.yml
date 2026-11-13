@@ -6,7 +6,7 @@
         name: no-shell
         shell: /bin/false
         password: "{{ var_no_shell_pass | password_hash('sha512') }}"
-        generate_ssh_key: yes
+        generate_ssh_key: true
   when: var_installation_type == "distribution-point"
   tags:
     - dp

@@ -1,6 +1,6 @@
 - name: Cron monthly @cron_monthly
   changed_when: false
-  ignore_errors: yes
+  ignore_errors: true
   command: 'logger "cron_monthly: you are here"'
   tags:
     - ws

@@ -31,7 +31,7 @@
 - name: Aide config file section @aide_config_file_section
   ignore_errors: "{{ansible_check_mode}}"
   blockinfile:
-    create: yes
+    create: true
     dest: /etc/aide/aide.conf.d/99_aide_myrule
     block: |
       /temp R

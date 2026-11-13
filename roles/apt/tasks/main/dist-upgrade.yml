@@ -41,7 +41,7 @@
   block:
     - name: Apt dist-upgrade Upgrade @apt_dist_upgrade
       apt:
-        update_cache: yes
+        update_cache: true
         upgrade: dist
       when: var_dist_upgrade
     - name: Apt dist-upgrade Remove flag @apt_dist_upgrade

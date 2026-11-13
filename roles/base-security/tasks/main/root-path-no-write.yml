@@ -3,7 +3,7 @@
   ignore_errors: "{{ansible_check_mode}}"
   block:
     - name: Get root paths which are not symbolic links @accounts_root_path_dirs_no_write
-      become: yes
+      become: true
       stat:
         path: '{{ item }}'
       changed_when: false

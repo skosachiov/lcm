@@ -69,7 +69,7 @@
     - name: Set autofs volume definitions Copy @set_autofs_volume
       blockinfile:
         dest: /etc/auto.media
-        create: yes
+        create: true
         marker: "# {mark} ANSIBLE MANAGED BLOCK {{item.dir}}"
         content: |
           {{item.dir}} -fstype=cifs,sec=krb5,user=&,uid=$UID,gid=$GID,cruid=$UID,file_mode=0600,dir_mode=0700,cache=loose ://{{item.server}}/{{item.service}}

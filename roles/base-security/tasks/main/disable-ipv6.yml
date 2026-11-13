@@ -15,7 +15,7 @@
     value: '1'
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   tags:
     - ws
     - sec
@@ -29,7 +29,7 @@
     value: '1'
     state: present
     reload: true
-    ignoreerrors: yes
+    ignoreerrors: true
   tags:
     - ws
     - sec

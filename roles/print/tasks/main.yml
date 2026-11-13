@@ -14,7 +14,7 @@
     - name: Enable service cupsd Started @service_cups_enabled
       service:
         name: cups
-        enabled: yes
+        enabled: true
         state: started
       when:
         - '"cups" in ansible_facts.packages'

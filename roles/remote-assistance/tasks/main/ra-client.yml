@@ -56,8 +56,8 @@
       copy:
         src: ~/.ssh/known_hosts
         dest: /etc/ssh/known_hosts
-        remote_src: yes
-      ignore_errors: yes
+        remote_src: true
+      ignore_errors: true
   tags:
     - ws
     - ra_init_known_hosts

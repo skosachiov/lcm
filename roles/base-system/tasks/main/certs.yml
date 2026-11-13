@@ -29,7 +29,7 @@
       file:
         path: /usr/local/share/ca-certificates
         mode: go+r
-        recurse: yes
+        recurse: true
     - name: Copy ca certs and script Update @copy_ca_certs_and_script
       command: update-ca-certificates
       changed_when: false

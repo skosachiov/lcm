@@ -191,7 +191,7 @@
           - iptables-persistent
           - netfilter-persistent
         state: present
-      ignore_errors: yes
+      ignore_errors: true
       register: package_result
     - name: Set iptables persistent V4 @set_iptables_persistent
       copy:

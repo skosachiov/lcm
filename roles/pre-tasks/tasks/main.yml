@@ -259,7 +259,7 @@
         host: "{{var_ansible_fqdn}}"
         timeout: 5
       register: result
-      ignore_errors: yes
+      ignore_errors: true
       changed_when: false
     - name: Get ansible server IP @default
       set_fact:
@@ -274,7 +274,7 @@
         host: "{{var_external_ansible_fqdn}}"
         timeout: 5
       register: result
-      ignore_errors: yes
+      ignore_errors: true
       changed_when: false
     - name: Get external ansible server IP @default
       set_fact:

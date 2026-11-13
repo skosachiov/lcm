@@ -11,7 +11,7 @@
       uri:
         url: https://{{var_ansible_fqdn}}/post/{{item}}.post
         method: GET
-        return_content: yes
+        return_content: true
         status_code: 200
         body_format: json
       register: users_pkgs

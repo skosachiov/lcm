@@ -131,7 +131,7 @@
       file:
         path: /etc/chromium/policies/managed
         mode: '0755'
-        recurse: yes
+        recurse: true
     - name: Status initial_bookmarks.html @chromium_policies
       failed_when: false
       stat: path=/usr/share/chromium/initial_bookmarks.html
