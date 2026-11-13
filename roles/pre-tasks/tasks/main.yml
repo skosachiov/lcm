@@ -21,6 +21,10 @@
       when: _ctr_markers.results | selectattr('stat.exists') | list | length > 0
   tags: always
 
+- name: Print default private IPv4 address
+  ansible.builtin.debug:
+    msg: "Private IP: {{ ansible_default_ipv4.address }}"
+
 # Get subnet
 
 - name: Find subnet var files @default
