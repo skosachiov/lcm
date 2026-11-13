@@ -1,3 +1,9 @@
+# Setup
+
+- name: Gather all facts @default
+  ansible.builtin.setup:
+  tags: always
+
 # Get subnet
 
 - name: Find subnet var files @default
