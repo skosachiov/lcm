@@ -1,24 +1,14 @@
 # Get subnet
 
-# Get subnet
-
 - name: Find subnet var files @default
   ansible.builtin.find:
     paths: "{{ playbook_dir }}/inventories/subnets"
     patterns: "main.yml"
+    file_type: file
     recurse: true
   register: _subnet_files
   delegate_to: localhost
   run_once: true
-  tags: always
-
-- name: Fail if no subnet files found @default
-  ansible.builtin.fail:
-    msg: >-
-      No main.yml under {{ playbook_dir }}/inventories/subnets
-      (matched={{ _subnet_files.matched | default(0) }}).
-      Did the checkout bring the tree?
-  when: (_subnet_files.matched | default(0)) == 0
   tags: always
 
 - name: Build subnet map (once) @default
@@ -26,7 +16,8 @@
     var_subnets_by_name: >-
       {%- set out = {} -%}
       {%- for f in _subnet_files.files -%}
-        {%- set site = f.path | regex_replace('^.*/subnets/([^/]+)/(?:vars/)?main\.yml$', '\1') -%}
+        {#- <site>/vars/main.yml -> <site> -#}
+        {%- set site = f.path | dirname | dirname | basename -%}
         {%- set content = lookup('file', f.path) | from_yaml -%}
         {%- set _ = out.update({ site: content.var_subnets | default([]) }) -%}
       {%- endfor -%}
@@ -38,20 +29,16 @@
 - name: Get subnet by IP @default
   ansible.builtin.set_fact:
     var_subnet: >-
-      {{ (var_subnets_by_name | default({}) | dict2items
-          | selectattr('value', 'select', 'ansible.utils.in_network', ansible_default_ipv4.address)
-          | selectattr('value', 'length')
-          | map(attribute='key') | first)
-         | default(none, true) }}
-  tags: always
-
-- name: Fail if subnet not resolved @default
-  ansible.builtin.fail:
-    msg: >-
-      No subnet found for {{ ansible_default_ipv4.address }} among
-      {{ var_subnets_by_name | default({}) | length }} site(s):
-      {{ var_subnets_by_name | default({}) | list }}
-  when: var_subnet is not defined or var_subnet is none or var_subnet | length == 0
+      {%- set ip = ansible_default_ipv4.address -%}
+      {%- set ns = namespace(found='') -%}
+      {%- for site, nets in (var_subnets_by_name | default({})).items() -%}
+        {%- for net in nets -%}
+          {%- if not ns.found and ip is ansible.utils.in_network(net) -%}
+            {%- set ns.found = site -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ ns.found }}
   tags: always
 
 # Include vars
