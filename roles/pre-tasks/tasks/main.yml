@@ -1,5 +1,9 @@
 # Get subnet
 
+- name: Gather facts @default
+  ansible.builtin.setup:
+  tags: always
+
 - name: DBG ip fact @default
   ansible.builtin.debug:
     msg:
