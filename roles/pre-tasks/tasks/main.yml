@@ -29,7 +29,7 @@
 - name: Get subnet by IP @default
   ansible.builtin.set_fact:
     var_subnet: >-
-      {%- set ip = ansible_facts.default_ipv4.address -%}
+      {%- set ip = ansible_default_ipv4.address -%}
       {%- set ns = namespace(found='') -%}
       {%- for site, nets in (var_subnets_by_name | default({})).items() -%}
         {%- for net in nets -%}
