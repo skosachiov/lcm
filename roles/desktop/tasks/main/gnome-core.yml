@@ -5,7 +5,7 @@
         name:
           - gnome-core
         state: present
-      when: ansible_os_family in ["Debian", "RedHat"]
+      when: ansible_os_family in ["Debian"]
     - name: Install GNOME on RHEL-based systems @install_gnome_core
       dnf:
         name: "@Workstation"
