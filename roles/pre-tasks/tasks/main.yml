@@ -14,10 +14,10 @@
     - name: Set dummy IPv4 for container @default
       ansible.builtin.set_fact:
         ansible_default_ipv4:
-          address: "127.0.0.1"
-          interface: lo
+          address: "192.168.1.2"
+          interface: eth0
           gateway: ""
-          netmask: "255.0.0.0"
+          netmask: "255.255.255.0"
       when: _ctr_markers.results | selectattr('stat.exists') | list | length > 0
   tags: always
 
