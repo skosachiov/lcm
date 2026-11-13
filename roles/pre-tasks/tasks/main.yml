@@ -3,13 +3,14 @@
 - name: Build subnet map (once) @default
   ansible.builtin.set_fact:
     var_subnets_by_name: >-
-      {{ dict(
-           query('fileglob', playbook_dir ~ '/inventories/subnets/*/main.yml')
-           | map('regex_replace', '^.*/subnets/([^/]+)/main\.yml$', '\1') | list,
-           query('fileglob', playbook_dir ~ '/inventories/subnets/*/main.yml')
-           | map('file') | map('from_yaml')
-           | map(attribute='var_subnets', default=[]) | list
-         ) }}
+      {{ query('fileglob', playbook_dir ~ '/inventories/subnets/*/vars/main.yml')
+         | map('regex_replace', '^.*/subnets/([^/]+)/vars/main\.yml$', '\1') | list
+         | zip(
+             query('fileglob', playbook_dir ~ '/inventories/subnets/*/vars/main.yml')
+             | map('file') | map('from_yaml')
+             | map(attribute='var_subnets', default=[]) | list
+           )
+         | items2dict }}
   delegate_to: localhost
   run_once: true
   tags: always
