@@ -1,9 +1,3 @@
-# Setup
-
-- name: Gather all facts @default
-  ansible.builtin.setup:
-  tags: always
-
 # Get subnet
 
 - name: Find subnet var files @default
@@ -17,7 +11,7 @@
   run_once: true
   tags: always
 
-- name: Build subnet map (once) @default
+- name: Build subnet map @default
   ansible.builtin.set_fact:
     var_subnets_by_name: >-
       {%- set out = {} -%}
@@ -35,7 +29,7 @@
 - name: Get subnet by IP @default
   ansible.builtin.set_fact:
     var_subnet: >-
-      {%- set ip = ansible_default_ipv4.address -%}
+      {%- set ip = ansible_facts.default_ipv4.address -%}
       {%- set ns = namespace(found='') -%}
       {%- for site, nets in (var_subnets_by_name | default({})).items() -%}
         {%- for net in nets -%}
