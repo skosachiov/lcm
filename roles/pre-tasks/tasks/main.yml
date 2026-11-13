@@ -2,6 +2,7 @@
 
 - name: Gather facts @default
   ansible.builtin.setup:
+    gather_timeout: 60
   tags: always
 
 - name: DBG ip fact @default
