@@ -1,18 +1,27 @@
+# Container detection
+
+- name: Detect container and set dummy IPv4 @default
+  when: ansible_default_ipv4.address is not defined
+  block:
+    - name: Check container markers @default
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /.dockerenv
+        - /run/.containerenv
+      register: _ctr_markers
+
+    - name: Set dummy IPv4 for container @default
+      ansible.builtin.set_fact:
+        ansible_default_ipv4:
+          address: "127.0.0.1"
+          interface: lo
+          gateway: ""
+          netmask: "255.0.0.0"
+      when: _ctr_markers.results | selectattr('stat.exists') | list | length > 0
+  tags: always
+
 # Get subnet
-
-- name: Gather facts @default
-  ansible.builtin.setup:
-    gather_timeout: 60
-  tags: always
-
-- name: DBG ip fact @default
-  ansible.builtin.debug:
-    msg:
-      address:   "{{ ansible_default_ipv4.address | default('<undefined>') }}"
-      interface: "{{ ansible_default_ipv4.interface | default('<undefined>') }}"
-      gateway:   "{{ ansible_default_ipv4.gateway | default('<undefined>') }}"
-      all_v4:    "{{ ansible_all_ipv4_addresses | default([]) }}"
-  tags: always
 
 - name: Find subnet var files @default
   ansible.builtin.find:
