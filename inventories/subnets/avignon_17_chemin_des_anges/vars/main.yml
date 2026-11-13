@@ -1,6 +1,5 @@
 var_subnets:
   - 10.71.20.0/22
-  - 192.168.1.0/24
 var_contacts:
   - francoise.denis
   - bernadette.descoteaux
