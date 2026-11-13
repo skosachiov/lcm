@@ -1,7 +1,18 @@
 # Container detection
 
+- name: Get default IPv4 address @default
+  ansible.builtin.set_fact:
+    _host_ipv4: >-
+      {{
+        (ansible_facts | default({}))
+        .get('default_ipv4', {})
+        .get('address', '')
+        | default('', true)
+      }}
+  tags: always
+
 - name: Detect container and set dummy IPv4 @default
-  when: ansible_default_ipv4.address is not defined
+  when: _host_ipv4 | length == 0
   block:
     - name: Check container markers @default
       ansible.builtin.stat:
@@ -13,19 +24,28 @@
 
     - name: Set dummy IPv4 for container @default
       ansible.builtin.set_fact:
-        ansible_default_ipv4:
-          address: "127.0.0.1"
-          interface: lo
-          gateway: ""
-          netmask: "255.0.0.0"
-      when: _ctr_markers.results | selectattr('stat.exists') | list | length > 0
+        _host_ipv4: "127.0.0.1"
+      when: >-
+        _ctr_markers.results
+        | selectattr('stat', 'defined')
+        | selectattr('stat.exists', 'equalto', true)
+        | list
+        | length > 0
   tags: always
 
-- name: Print default private IPv4 address
-  ansible.builtin.debug:
-    msg: "Private IP: {{ ansible_default_ipv4.address }}"
+- name: Verify IPv4 address @default
+  ansible.builtin.assert:
+    that:
+      - _host_ipv4 | length > 0
+    fail_msg: "Could not determine default IPv4 address"
+  tags: always
 
-# Get subnet
+- name: Print default private IPv4 address @default
+  ansible.builtin.debug:
+    msg: "Private IP: {{ _host_ipv4 }}"
+  tags: always
+
+# Discover subnet configurations
 
 - name: Find subnet var files @default
   ansible.builtin.find:
@@ -38,71 +58,74 @@
   run_once: true
   tags: always
 
-- name: Build subnet map @default
+- name: Initialize subnet map @default
   ansible.builtin.set_fact:
-    var_subnets_by_name: >-
-      {%- set out = {} -%}
-      {%- for f in _subnet_files.files -%}
-        {#- <site>/vars/main.yml -> <site> -#}
-        {%- set site = f.path | dirname | dirname | basename -%}
-        {%- set content = lookup('file', f.path) | from_yaml -%}
-        {%- set _ = out.update({ site: content.var_subnets | default([]) }) -%}
-      {%- endfor -%}
-      {{ out }}
-  delegate_to: localhost
+    var_subnets_by_name: {}
   run_once: true
   tags: always
 
-- name: Get subnet by IP @default
+- name: Build subnet map @default
   ansible.builtin.set_fact:
-    var_subnet: >-
-      {%- set ip = ansible_default_ipv4.address -%}
-      {%- set ns = namespace(found='') -%}
-      {%- for site, nets in (var_subnets_by_name | default({})).items() -%}
-        {%- for net in nets -%}
-          {%- if not ns.found and ip is ansible.utils.in_network(net) -%}
-            {%- set ns.found = site -%}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endfor -%}
-      {{ ns.found }}
+    var_subnets_by_name: >-
+      {{
+        var_subnets_by_name | combine({
+          (item.path | dirname | dirname | basename):
+          (
+            (lookup('ansible.builtin.file', item.path)
+            | from_yaml
+            | default({}, true))
+            .get('var_subnets', [])
+          )
+        })
+      }}
+  loop: "{{ _subnet_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when: (item.path | dirname | basename) == 'vars'
+  run_once: true
   tags: always
 
-# Include vars
-
-- name: Include all vars @default
-  include_vars:
-    dir: "{{playbook_dir}}/inventories/all/vars"
+- name: Verify subnet configurations @default
+  ansible.builtin.assert:
+    that:
+      - var_subnets_by_name | length > 0
+    fail_msg: "No subnet configurations found in inventories/subnets"
+  run_once: true
   tags: always
 
-- name: Include subnet vars @default
-  include_vars:
-    file: "{{playbook_dir}}/inventories/subnets/{{var_subnet}}/vars/main.yml"
+# Match subnet by IPv4
+
+- name: Initialize subnet matches @default
+  ansible.builtin.set_fact:
+    _matched_subnets: []
   tags: always
 
-# Get time starttransfer
-
-- name: Get curl time starttransfer @default
-  block:
-    - name: Get curl time starttransfer Shell @default
-      changed_when: false
-      shell: LANG=C.UTF-8 curl -w "%{time_starttransfer}" -o /dev/null -s https://{{var_ansible_fqdn}}
-      register: result
-    - name: Get curl time starttransfer Set @default
-      set_fact:
-        var_time_starttransfer: "{{ 9.999999 if (result.stdout_lines[0]|float) == 0.000000 else (result.stdout_lines[0]|float) }}"
-  rescue:
-    - name: Get curl time starttransfer Rescue @default
-      set_fact:
-        var_time_starttransfer: 0.100000
+- name: Find matching subnet @default
+  ansible.builtin.set_fact:
+    _matched_subnets: "{{ _matched_subnets + [item.0.key] }}"
+  loop: "{{ var_subnets_by_name | dict2items | subelements('value') }}"
+  loop_control:
+    label: "{{ item.0.key }}: {{ item.1 }}"
+  when: _host_ipv4 is ansible.utils.in_network(item.1)
   tags: always
 
-# Do not continue if server load is high
+- name: Verify unique subnet match @default
+  ansible.builtin.assert:
+    that:
+      - (_matched_subnets | unique | list | length) == 1
+    fail_msg: >-
+      Expected exactly one subnet for IP {{ _host_ipv4 }}.
+      Matches: {{ _matched_subnets | unique | list }}
+  tags: always
 
-- name: Do not continue if server load is high @default
-  failed_when: true
-  command: 'logger "do not continue if server load is high"'
-  when: var_time_starttransfer|float > 2.500000
+- name: Set subnet name @default
+  ansible.builtin.set_fact:
+    var_subnet: "{{ _matched_subnets | unique | first }}"
+  tags: always
+
+- name: Print detected subnet @default
+  ansible.builtin.debug:
+    msg: "Detected subnet: {{ var_subnet }} (IP: {{ _host_ipv4 }})"
   tags: always
 
 # Get ou
