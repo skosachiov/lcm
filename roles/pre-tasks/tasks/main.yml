@@ -13,7 +13,7 @@
          | items2dict }}
   delegate_to: localhost
   run_once: true
-  tags: always
+  tags: always  
 
 - name: Get subnet by IP @default
   ansible.builtin.set_fact:
