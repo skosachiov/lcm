@@ -24,14 +24,13 @@
 - name: Build subnet map (once) @default
   ansible.builtin.set_fact:
     var_subnets_by_name: >-
-      {{ _subnet_files.files | map(attribute='path') | list
-         | map('regex_replace', '^.*/subnets/([^/]+)/(?:vars/)?main\.yml$', '\1') | list
-         | zip(
-             _subnet_files.files | map(attribute='path') | list
-             | map('file') | map('from_yaml')
-             | map(attribute='var_subnets', default=[]) | list
-           )
-         | items2dict }}
+      {%- set out = {} -%}
+      {%- for f in _subnet_files.files -%}
+        {%- set site = f.path | regex_replace('^.*/subnets/([^/]+)/(?:vars/)?main\.yml$', '\1') -%}
+        {%- set content = lookup('file', f.path) | from_yaml -%}
+        {%- set _ = out.update({ site: content.var_subnets | default([]) }) -%}
+      {%- endfor -%}
+      {{ out }}
   delegate_to: localhost
   run_once: true
   tags: always
