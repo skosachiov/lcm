@@ -1,11 +1,38 @@
 # Get subnet
 
+- name: Build subnet map (once) @default
+  ansible.builtin.set_fact:
+    var_subnets_by_name: >-
+      {{ dict(
+           query('fileglob', playbook_dir ~ '/inventories/subnets/*/main.yml')
+           | map('regex_replace', '^.*/subnets/([^/]+)/main\.yml$', '\1') | list,
+           query('fileglob', playbook_dir ~ '/inventories/subnets/*/main.yml')
+           | map('file') | map('from_yaml')
+           | map(attribute='var_subnets', default=[]) | list
+         ) }}
+  delegate_to: localhost
+  run_once: true
+  tags: always
+
 - name: Get subnet by IP @default
-  ignore_errors: true
-  set_fact:
-    var_subnet: "{{item.0.key}}"
-  loop: "{{ var_subnets | dict2items | subelements('value') }}"
-  when: ansible_default_ipv4.address is ansible.utils.in_network(item.1) 
+  ansible.builtin.set_fact:
+    var_subnet: >-
+      {{ (var_subnets_by_name | dict2items
+          | map(attribute='key') | list
+          | zip(
+              var_subnets_by_name | dict2items
+              | map(attribute='value')
+              | map('select', 'ansible.utils.in_network', ansible_default_ipv4.address)
+              | map('list')
+              | map('map', 'ansible.utils.ipaddr', 'prefix')
+              | map('map', 'int')
+              | map('max', default=-1)
+              | list
+            )
+          | selectattr(1, 'ge', 0)
+          | sort(attribute='1', reverse=True)
+          | first | first)
+         | default(none, true) }}
   tags: always
 
 # Include vars
