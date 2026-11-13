@@ -1,0 +1,18 @@
+sudo
+vim (>= 9.0)
+tmux (>= 3.2)
+htop
+tree
+jq
+openssh-client
+rsync
+less
+strace
+lsof
+gdb
+tcpdump
+iproute2
+net-tools
+dnsutils
+auditd
+nmap (>= 7.9)
