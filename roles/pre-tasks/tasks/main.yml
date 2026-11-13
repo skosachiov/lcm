@@ -1,59 +1,59 @@
 # Get subnet
 
+# Get subnet
+
+- name: Find subnet var files @default
+  ansible.builtin.find:
+    paths: "{{ playbook_dir }}/inventories/subnets"
+    patterns: "main.yml"
+    recurse: true
+  register: _subnet_files
+  delegate_to: localhost
+  run_once: true
+  tags: always
+
+- name: Fail if no subnet files found @default
+  ansible.builtin.fail:
+    msg: >-
+      No main.yml under {{ playbook_dir }}/inventories/subnets
+      (matched={{ _subnet_files.matched | default(0) }}).
+      Did the checkout bring the tree?
+  when: (_subnet_files.matched | default(0)) == 0
+  tags: always
+
 - name: Build subnet map (once) @default
   ansible.builtin.set_fact:
     var_subnets_by_name: >-
-      {{ query('fileglob', playbook_dir ~ '/inventories/subnets/*/vars/main.yml')
-         | map('regex_replace', '^.*/subnets/([^/]+)/vars/main\.yml$', '\1') | list
+      {{ _subnet_files.files | map(attribute='path') | list
+         | map('regex_replace', '^.*/subnets/([^/]+)/(?:vars/)?main\.yml$', '\1') | list
          | zip(
-             query('fileglob', playbook_dir ~ '/inventories/subnets/*/vars/main.yml')
+             _subnet_files.files | map(attribute='path') | list
              | map('file') | map('from_yaml')
              | map(attribute='var_subnets', default=[]) | list
            )
          | items2dict }}
   delegate_to: localhost
   run_once: true
-  tags: always  
+  tags: always
 
 - name: Get subnet by IP @default
   ansible.builtin.set_fact:
     var_subnet: >-
-      {{ (var_subnets_by_name | dict2items
-          | map(attribute='key') | list
-          | zip(
-              var_subnets_by_name | dict2items
-              | map(attribute='value')
-              | map('select', 'ansible.utils.in_network', ansible_default_ipv4.address)
-              | map('list')
-              | map('map', 'ansible.utils.ipaddr', 'prefix')
-              | map('map', 'int')
-              | map('max', default=-1)
-              | list
-            )
-          | selectattr(1, 'ge', 0)
-          | sort(attribute='1', reverse=True)
-          | first | first)
+      {{ (var_subnets_by_name | default({}) | dict2items
+          | selectattr('value', 'select', 'ansible.utils.in_network', ansible_default_ipv4.address)
+          | selectattr('value', 'length')
+          | map(attribute='key') | first)
          | default(none, true) }}
   tags: always
 
-- name: DBG var_subnets_by_name @default
-  ansible.builtin.debug:
-    var: var_subnets_by_name
+- name: Fail if subnet not resolved @default
+  ansible.builtin.fail:
+    msg: >-
+      No subnet found for {{ ansible_default_ipv4.address }} among
+      {{ var_subnets_by_name | default({}) | length }} site(s):
+      {{ var_subnets_by_name | default({}) | list }}
+  when: var_subnet is not defined or var_subnet is none or var_subnet | length == 0
   tags: always
-
-- name: DBG var_subnet @default
-  ansible.builtin.debug:
-    msg:
-      value: "{{ var_subnet | default('<undefined>') }}"
-      type:  "{{ var_subnet | default('') | type_debug }}"
-      len:   "{{ var_subnet | default('') | length }}"
-  tags: always
-
-- name: DBG ip @default
-  ansible.builtin.debug:
-    msg: "{{ ansible_default_ipv4.address }}"
-  tags: always
-
 
 # Include vars
 
