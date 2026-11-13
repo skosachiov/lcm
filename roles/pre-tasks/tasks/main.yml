@@ -36,6 +36,25 @@
          | default(none, true) }}
   tags: always
 
+- name: DBG var_subnets_by_name @default
+  ansible.builtin.debug:
+    var: var_subnets_by_name
+  tags: always
+
+- name: DBG var_subnet @default
+  ansible.builtin.debug:
+    msg:
+      value: "{{ var_subnet | default('<undefined>') }}"
+      type:  "{{ var_subnet | default('') | type_debug }}"
+      len:   "{{ var_subnet | default('') | length }}"
+  tags: always
+
+- name: DBG ip @default
+  ansible.builtin.debug:
+    msg: "{{ ansible_default_ipv4.address }}"
+  tags: always
+
+
 # Include vars
 
 - name: Include all vars @default
