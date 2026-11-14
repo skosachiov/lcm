@@ -25,6 +25,8 @@
       register: result
     - name: Usbguard allowed devices Init @usbguard_allowed_devices
       shell: usbguard generate-policy >> /etc/usbguard/rules.conf
+      changed_when: false
+      check_mode: false
       when: result.stat.size == 0
     - name: Usbguard allowed devices Block @usbguard_allowed_devices
       blockinfile:
