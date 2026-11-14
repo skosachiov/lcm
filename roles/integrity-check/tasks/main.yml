@@ -1,27 +1,59 @@
+
 - name: Ensure aide is active @aide_is_active
-  ignore_errors: "{{ansible_check_mode}}"
+  ignore_errors: "{{ ansible_check_mode }}"
   block:
-    - name: Ensure aide is active State present @aide_is_active
-      package:
+    - name: Ensure aide is installed @aide_is_active
+      ansible.builtin.package:
         name: aide
         state: present
-    - name: Ensure aide is active Report syslog @aide_is_active
-      lineinfile:
-        create: true
-        dest: /etc/aide/aide.conf
-        regexp: ^#?\s*report_url
+    - name: Set AIDE configuration path @aide_is_active
+      ansible.builtin.set_fact:
+        _aide_config: >-
+          {{
+            '/etc/aide/aide.conf'
+            if ansible_facts['os_family'] == 'Debian'
+            else '/etc/aide.conf'
+          }}
+    - name: Check AIDE configuration @aide_is_active
+      ansible.builtin.stat:
+        path: "{{ _aide_config }}"
+      register: _aide_config_stat
+    - name: Ensure AIDE reports to syslog @aide_is_active
+      ansible.builtin.lineinfile:
+        path: "{{ _aide_config }}"
+        regexp: '^\s*#?\s*report_url\s*='
         line: "report_url=syslog:LOG_INFO"
-    - name: Ensure aide is active Database is up-to-date @aide_is_active
-      stat:
-        path: /var/lib/aide/aide.db
-      register: file_aide
-    - name: Ensure aide is active Warning @aide_is_active
-      debug:
-        msg: "aide database is not up-to-date"
-      when: file_aide.stat.mtime|int < (ansible_date_time.epoch|int - 60*60*48)
-      changed_when: file_aide.stat.mtime|int < (ansible_date_time.epoch|int - 60*60*48)
-      ignore_errors: "{{ansible_check_mode}}"
-  when: ansible_os_family in ["Debian", "RedHat"]
+        state: present
+      when: _aide_config_stat.stat.exists | default(false)
+    - name: Check AIDE database files @aide_is_active
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /var/lib/aide/aide.db
+        - /var/lib/aide/aide.db.gz
+      register: _aide_database_stats
+    - name: Collect AIDE database timestamps @aide_is_active
+      ansible.builtin.set_fact:
+        _aide_database_mtimes: >-
+          {{
+            _aide_database_stats.results
+            | selectattr('stat.exists', 'equalto', true)
+            | map(attribute='stat.mtime')
+            | list
+          }}
+    - name: Warn if AIDE database is missing @aide_is_active
+      ansible.builtin.debug:
+        msg: "WARNING: AIDE database does not exist"
+      when: _aide_database_mtimes | length == 0
+    - name: Warn if AIDE database is outdated @aide_is_active
+      ansible.builtin.debug:
+        msg: "WARNING: AIDE database is older than 48 hours"
+      when:
+        - _aide_database_mtimes | length > 0
+        - >-
+          (_aide_database_mtimes | max | float) <
+          (ansible_facts['date_time']['epoch'] | int - 172800)
+  when: ansible_facts['os_family'] in ['Debian', 'RedHat']
   tags:
     - ws
     - sec
