@@ -7,7 +7,7 @@
   - name: Set devel flag
     copy:
       content: ""
-      dest: /etc/ansible/devel-workstation
+      dest: /etc/ansible/developer-workstation
       force: no
     tags:
       - ws

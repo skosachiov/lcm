@@ -1,6 +1,6 @@
 # Only allow system python executables and libs
 
-{% if var_programmer_workstation %}
+{% if var_workstation_profile == "developer" %}
 allow perm=open all trust=1 : ftype=text/x-python
 allow perm=open all trust=1 : ftype=application/x-bytecode.python
 {% endif %}

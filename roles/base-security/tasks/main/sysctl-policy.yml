@@ -132,7 +132,7 @@
     - name: Ensure sysctl net ip forward is set to 0 ipv4 @sysctl_disable_net_forward
       sysctl:
         name: net.ipv4.ip_forward
-        value: "{{'1' if var_programmer_workstation else '0'}}"
+        value: "{{'1' if var_workstation_profile == 'developer' else '0'}}"
         state: present
         reload: true
         ignoreerrors: true
@@ -177,7 +177,8 @@
     state: present
     reload: true
     ignoreerrors: true
-  when: var_devel_workstation
+  when:
+    - var_workstation_profile == "developer"
   loop:
     - ['kernel.kptr_restrict', '2']
     - ['net.core.bpf_jit_harden', '2']

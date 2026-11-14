@@ -47,7 +47,7 @@
         - grub_nondefault.changed
         - efi_windows.stdout_lines|length > 0
   when:
-    - var_devel_workstation
+    - var_workstation_profile == "developer"
   tags:
     - ws
     - dp

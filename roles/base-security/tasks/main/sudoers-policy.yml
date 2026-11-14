@@ -13,7 +13,7 @@
           {% endfor %}          
         insertafter: EOF
         validate: /usr/sbin/visudo -cf %s
-      when: not var_admin_workstation
+      when: var_workstation_profile not in ["admin", "superadmin"]
     - name: Set sudoers groups Admin @set_sudoers_groups
       blockinfile:
         dest: /etc/sudoers
@@ -23,7 +23,7 @@
           %{{var_local_admins_group}} ALL=(ALL) EXEC:ALL, PASSWD:ALL
         insertafter: EOF
         validate: /usr/sbin/visudo -cf %s
-      when: var_admin_workstation
+      when: var_workstation_profile not in ["admin", "superadmin"]
   tags:
     - ws
     - sec

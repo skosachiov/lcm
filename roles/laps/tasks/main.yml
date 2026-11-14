@@ -64,7 +64,7 @@
     - name: Local admin password solution Failed
       debug:
         msg: "Local admin password solution failed"
-  when: var_admin_workstation
+  when: var_workstation_profile in ["admin", "superadmin"]
   tags:
     - ws
     - sec

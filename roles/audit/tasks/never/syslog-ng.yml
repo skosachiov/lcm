@@ -35,7 +35,7 @@
         block: |
           destination remote_syslog { network({{var_dp_rsyslog_server}} transport("udp") port(514)); };
         create: true
-        state: "{{ 'present' if var_installation_type in ['workstation', 'devel-workstation'] else 'absent' }}"
+        state: "{{ 'present' if var_installation_type in ['workstation', 'developer-workstation'] else 'absent' }}"
       notify: Syslog-ng restarted
     - name: Set syslog-ng access to remote loghost Block @syslog_ng_access_remote_loghost
       blockinfile:
@@ -45,7 +45,7 @@
         insertafter: END_REMOTE_DEST
         block: "{{var_syslog_ng_filter}}"
         create: true
-        state: "{{ 'present' if var_installation_type in ['workstation', 'devel-workstation'] else 'absent' }}"
+        state: "{{ 'present' if var_installation_type in ['workstation', 'developer-workstation'] else 'absent' }}"
       notify: Syslog-ng restarted
     - name: Set syslog-ng access to remote loghost Block @syslog_ng_access_remote_loghost
       blockinfile:
@@ -57,7 +57,7 @@
           log { source(s_src); filter(f_auth); destination(remote_syslog); };
           log { source(s_src); filter(f_daemon); destination(remote_syslog); };
         create: true
-        state: "{{ 'present' if var_installation_type in ['workstation', 'devel-workstation'] else 'absent' }}"
+        state: "{{ 'present' if var_installation_type in ['workstation', 'developer-workstation'] else 'absent' }}"
       notify: Syslog-ng restarted
     - name: Set syslog-ng remote auditd @syslog_ng_access_remote_loghost
       blockinfile:
@@ -88,9 +88,10 @@
         block: |
           destination remote_syslog_aux { network("{{var_rsyslog_server_aux}}" transport("udp") port(514)); };
         create: true
-        state: "{{ 'present' if var_installation_type in ['workstation', 'devel-workstation'] else 'absent' }}"
+        state: "{{ 'present' if var_installation_type in ['workstation', 'developer-workstation'] else 'absent' }}"
       notify: Syslog-ng restarted
-      when: var_devel_workstation
+      when: 
+        - var_workstation_profile == "developer"
     - name: Set syslog-ng access to remote loghost aux Set @set_unset_rsyslog_aux
       blockinfile:
         dest: /etc/syslog-ng/syslog-ng.conf
@@ -101,16 +102,17 @@
           log { source(s_src); filter(f_auth); destination(remote_syslog_aux); };
           log { source(s_src); filter(f_daemon); destination(remote_syslog_aux); };
         create: true
-        state: "{{ 'present' if var_installation_type in ['workstation', 'devel-workstation'] else 'absent' }}"
+        state: "{{ 'present' if var_installation_type in ['workstation', 'developer-workstation'] else 'absent' }}"
       notify: Syslog-ng restarted
-      when: var_devel_workstation
+      when:
+        - var_workstation_profile == "developer"
     - name: Set syslog-ng access to remote loghost aux Unset @set_unset_rsyslog_aux
       blockinfile:
         dest: /etc/syslog-ng/syslog-ng.conf
         marker_begin: BEGIN_REMOTE_AUX_LOG
         marker_end: END_REMOTE_AUX_LOG
         state: absent
-      when: not var_devel_workstation
+      when: not var_workstation_profile == "developer"
   tags:
     - ws
     - sec
@@ -131,9 +133,8 @@
           source s_audit { file("/var/log/audit/audit.log" persist-name("audit")); };
           log { source(s_audit); destination(remote_syslog_aux); };
         create: true
-        state: "{{ 'present' if var_installation_type in ['workstation', 'devel-workstation'] else 'absent' }}"
+        state: "{{ 'present' if var_installation_type in ['workstation', 'developer-workstation'] else 'absent' }}"
       notify: Syslog-ng restarted
-      # when: var_devel_workstation
     - name: Set syslog-ng access to remote loghost aux Stat @set_unset_rsyslog_aux_conf_d
       stat:
         path: /etc/syslog-ng/conf.d/remote-syslog.conf
@@ -144,7 +145,6 @@
         marker_begin: BEGIN_REMOTE_AUX_LOG
         marker_end: END_REMOTE_AUX_LOG
         state: absent
-      # when: not var_devel_workstation and stat_result.stat.exists
       when: false
   tags:
     - ws
@@ -191,7 +191,7 @@
         block: |
           log_msg_size(8192); log_fifo_size(1024); flush_lines(128);
         create: true
-        state: "{{ 'present' if var_installation_type in ['workstation', 'devel-workstation'] else 'absent' }}"
+        state: "{{ 'present' if var_installation_type in ['workstation', 'developer-workstation'] else 'absent' }}"
       notify: Syslog-ng restarted
   when: ansible_facts.nodename != var_dp_rsyslog_server
   tags:

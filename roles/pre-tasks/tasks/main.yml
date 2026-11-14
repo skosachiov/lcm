@@ -299,20 +299,14 @@
 
 - name: Check file exists @default
   stat:
-    path: /etc/ansible/administrative-workstation
+    path: /etc/ansible/admin-workstation
   register: result
   tags: always
 
 - name: Set admin workstation @default
   set_fact:
-    var_admin_workstation: true
+    var_workstation_profile: admin
   when: result.stat.exists
-  tags: always
-
-- name: Include profile vars @default
-  include_vars:
-    dir: "{{playbook_dir}}/inventories/profiles/admin/vars"
-  when: var_admin_workstation
   tags: always
 
 # Set flag superadmin workstations "sw"
@@ -325,14 +319,29 @@
 
 - name: Set superadmin workstation @default
   set_fact:
-    var_superadmin_workstation: true
+    var_workstation_profile: superadmin
   when: result.stat.exists
   tags: always
 
+# Set flag devel workstation "dw"
+
+- name: Check file exists @default
+  stat:
+    path: /etc/ansible/developer-workstation
+  register: result
+  tags: always
+
+- name: Set devel workstation @default
+  set_fact:
+    var_workstation_profile: developer
+  when: result.stat.exists
+  tags: always
+
+# Set flag superadmin workstations
+
 - name: Include profile vars @default
   include_vars:
-    dir: "{{playbook_dir}}/inventories/profiles/superadmin/vars"
-  when: var_superadmin_workstation
+    dir: "{{playbook_dir}}/inventories/profiles/{{var_workstation_profile}}/vars"
   tags: always
 
 # Set flag network auditd "na"
@@ -375,26 +384,6 @@
   set_fact:
     var_home_with_exec: true
   when: result.stat.exists
-  tags: always
-
-# Set flag devel workstation "dw"
-
-- name: Check file exists @default
-  stat:
-    path: /etc/ansible/devel-workstation
-  register: result
-  tags: always
-
-- name: Set devel workstation @default
-  set_fact:
-    var_devel_workstation: true
-  when: result.stat.exists
-  tags: always
-
-- name: Include profile vars @default
-  include_vars:
-    dir: "{{playbook_dir}}/inventories/env/devel/vars"
-  when: var_devel_workstation
   tags: always
 
 # Set flag unrestricted os "uo"
@@ -468,20 +457,6 @@
   when: result.stat.exists
   tags: always
 
-# Set flag programmer workstation "pw"
-
-- name: Check programmer workstation @default
-  stat:
-    path: /etc/ansible/programmer-workstation
-  register: result
-  tags: always
-
-- name: Set programmer workstation @default
-  set_fact:
-    var_programmer_workstation: true
-  when: result.stat.exists
-  tags: always
-
 # Set flag kde desktop "kd"
 
 - name: Check kde-desktop @default
@@ -549,7 +524,6 @@
 # Build merged APT package lists
 
 - name: Build merged APT package lists @default
-  when: ansible_facts['os_family'] == 'Debian'
   tags: always
   block:
 
@@ -571,18 +545,10 @@
             paths: "{{ ['subnets/' ~ var_subnet] if var_subnet | default('') | length > 0 else [] }}"
 
           - name: env
-            paths: >-
-              {{
-                (['env/' ~ var_environment] if var_environment | default('') | length > 0 else [])
-                + (['env/devel'] if var_devel_workstation | default(false) | bool else [])
-              }}
+            paths: "{{ ['env/' ~ var_environment] if var_environment | default('') | length > 0 else [] }}"
 
           - name: profiles
-            paths: >-
-              {{
-                (['profiles/admin'] if var_admin_workstation | default(false) | bool else [])
-                + (['profiles/superadmin'] if var_superadmin_workstation | default(false) | bool else [])
-              }}
+            paths: "{{ ['profiles/' ~ var_workstation_profile] if var_workstation_profile | default('') | length > 0 else [] }}"
 
           - name: distribution
             paths:

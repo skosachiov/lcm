@@ -1,11 +1,12 @@
-- name: Ansible devel workstation @ansible_devel_workstation
+- name: Ansible devel workstation @ansible_developer_workstation
   set_fact:
     var_ansible_repo: "{{var_ansible_devel_repo}}"
     var_ansible_git: "https://{{var_ansible_fqdn}}/git/{{var_ansible_devel_repo}}"
-  when: var_devel_workstation
+  when:
+    - var_workstation_profile == "developer"
   tags:
     - ws
-    - ansible_devel_workstation
+    - ansible_developer_workstation
 
 - name: Cron ansible pull @cron_ansible_pull
   ignore_errors: "{{ansible_check_mode}}"
@@ -66,7 +67,8 @@
     - daily
     - weekly
     - monthly
-  when: var_devel_workstation
+  when:
+    - var_workstation_profile == "developer"
   tags:
     - ws
     - cron_periodic_ansible_pull

@@ -30,12 +30,10 @@ var_site_address: "default"
 var_geo_coord: [0.0, 0.0]
 var_company: gendarmerie
 
-var_admin_workstation: false
-var_superadmin_workstation: false
-var_programmer_workstation: false
+var_workstation_profile: user
+
 var_network_auditd: false
 var_always_on_display: false
-var_devel_workstation: false
 var_unrestricted_os: false
 var_thin_client: false
 var_ad_server: false

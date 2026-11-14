@@ -68,7 +68,7 @@ Profiling is accomplished through a defined set of roles compiled into playbooks
 Profiles support security flags, such as:
 
 * mandatory-access (AppArmor, SELinux)
-* administrative-workstation (restricted group access)
+* admin-workstation (restricted group access)
 * network-auditd (sending auditd data to a log server)
 * always-on-display (disabling display lock and shutdown)
 * devel-workstation (switching the host to test workstation mode)
@@ -451,7 +451,7 @@ sh late-script.sh
 
 ## Deploy administrative workstation in pull mode
 
-Create host flag: `touch /etc/ansible/administrative-workstation`
+Create host flag: `touch /etc/ansible/admin-workstation`
 ```
 wget http://example.test/git/lcm/late-script.sh
 sh late-script.sh
