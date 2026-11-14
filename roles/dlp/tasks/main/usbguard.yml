@@ -10,39 +10,48 @@
     - usbguard_is_installed
 
 - name: Usbguard allowed devices @usbguard_allowed_devices
-  ignore_errors: "{{ansible_check_mode}}"
+  ignore_errors: "{{ ansible_check_mode }}"
   block:
     - name: Usbguard allowed devices Create rules @usbguard_allowed_devices
-      copy:
+      ansible.builtin.copy:
         content: ""
         dest: /etc/usbguard/rules.conf
-        force: no
-        owner: root
-        mode: 0500
-    - name: Usbguard allowed devices Check empty @usbguard_allowed_devices
-      stat:
-        path: /etc/usbguard/rules.conf
-      register: result
-    - name: Usbguard allowed devices Init @usbguard_allowed_devices
-      shell: usbguard generate-policy >> /etc/usbguard/rules.conf
-      changed_when: false
-      check_mode: false
-      when: result.stat.size == 0
-    - name: Usbguard allowed devices Block @usbguard_allowed_devices
-      blockinfile:
-        dest: /etc/usbguard/rules.conf
-        marker: "{mark}"
-        marker_begin: block serial "ANSIBLE_BEGIN"
-        marker_end: block serial "ANSIBLE_END"
-        insertbefore: "BOF"
-        block: "{{var_usb_rules}}"
-      notify: Usbguard restarted
-    - name: Usbguard allowed devices Permissions @usbguard_allowed_devices
-      file:
-        path: /etc/usbguard/rules.conf
-        mode: '0600'
+        force: false
         owner: root
         group: root
+        mode: "0600"
+    - name: Usbguard allowed devices Check empty @usbguard_allowed_devices
+      ansible.builtin.stat:
+        path: /etc/usbguard/rules.conf
+      register: _usbguard_rules_stat
+    - name: Usbguard allowed devices Init @usbguard_allowed_devices
+      ansible.builtin.shell: usbguard generate-policy >> /etc/usbguard/rules.conf
+      when:
+        - not ansible_check_mode
+        - _usbguard_rules_stat.stat.exists | default(false)
+        - (_usbguard_rules_stat.stat.size | default(0) | int) == 0
+      notify: Usbguard restarted
+    - name: Usbguard allowed devices Block @usbguard_allowed_devices
+      ansible.builtin.blockinfile:
+        path: /etc/usbguard/rules.conf
+        marker: "{mark}"
+        marker_begin: 'block serial "ANSIBLE_BEGIN"'
+        marker_end: 'block serial "ANSIBLE_END"'
+        insertbefore: BOF
+        block: "{{ var_usb_rules }}"
+      when: >-
+        not ansible_check_mode or
+        (_usbguard_rules_stat.stat.exists | default(false))
+      notify: Usbguard restarted
+    - name: Usbguard allowed devices Permissions @usbguard_allowed_devices
+      ansible.builtin.file:
+        path: /etc/usbguard/rules.conf
+        mode: "0600"
+        owner: root
+        group: root
+      when: >-
+        not ansible_check_mode or
+        (_usbguard_rules_stat.stat.exists | default(false))
   tags:
     - ws
     - sec

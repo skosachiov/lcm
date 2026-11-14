@@ -10,6 +10,7 @@
       dnf:
         name: "@Workstation"
         state: present
+        allowerasing: true
       when: ansible_os_family in ['RedHat', 'Rocky']
     - name: Set default to graphical target @install_gnome_core
       command: systemctl set-default graphical.target
