@@ -43,6 +43,34 @@
     - mob
     - set_grub2_password
 
+- name: Check superuser and PBKDF2 hash @check_superuser_pbkdf2_grub
+  command:
+    cmd: >
+      grep -Eq 'password_pbkdf2\s+"?{{ var_superusers }}"?\s+"?grub\.pbkdf2\.sha512\.[0-9]+\.[A-Fa-f0-9]+\.[A-Fa-f0-9]+"?'
+      /boot/grub/grub.cfg
+  register: grub_pw_check
+  changed_when: grub_pw_check.rc != 0
+  failed_when: false
+  when: ansible_pkg_mgr == 'apt'
+  tags:
+    - ws
+    - sec
+    - mob
+    - check_superuser_pbkdf2_grub
+
+- name: Check normal menuentries have unrestricted flag @check_normal_grub_entries
+  command:
+    cmd: grep -Eq 'menuentry\s+.*--unrestricted' /boot/grub/grub.cfg
+  register: grub_unrestricted_check
+  changed_when: grub_unrestricted_check.rc != 0
+  failed_when: false
+  when: ansible_pkg_mgr == 'apt'
+  tags:
+    - ws
+    - sec
+    - mob
+    - check_normal_grub_cmdline
+
 - name: Set grub cmdline @set_grub_cmdline
   ignore_errors: "{{ansible_check_mode}}"
   replace:
