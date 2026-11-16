@@ -75,23 +75,12 @@ Profiles support security facts, such as:
 * flash_drive (thin client mode on a USB drive)
 * dist_upgrade (host forcibly updates all packages), etc.
 
-/etc/ansible/facts.d/mandatory_access.fact
-true
-(ansible_local.mandatory_access)
+Examples:
 
-/etc/ansible/facts.d/env.fact
-"prod"
-(ansible_local.env)
-
-/etc/ansible/facts.d/device.fact
-"workstation"
-
-/etc/ansible/facts.d/profile.fact
-"user"
-
-
-
-
+* `echo true > /etc/ansible/facts.d/mandatory_access.fact`
+* `echo '"prod"' > /etc/ansible/facts.d/env.fact`
+* `echo '"workstation"' > /etc/ansible/facts.d/device.fact`
+* `echo '"user"' > /etc/ansible/facts.d/profile.fact`
 
 For security specialists, numerous opportunities exist to coordinate changes and oversee management workflows: code reviews, merge requests, and pull requests. For instance, only a security specialist may commit to the master branch (see Lifecycle). Ansible-pull agents retrieve playbooks from the master branch. Large enterprise divisions have room for creativity—branches and units can address their specific needs in separate Git repositories without compromising baseline security configurations. On-premise solutions like GitLab or Forgejo are well-suited for collaboration.
 
