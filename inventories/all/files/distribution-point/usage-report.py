@@ -10,8 +10,9 @@
 # chown www-data /var/log/usage-report/usage-report-$(date -d "today" +"\%Y-\%m-\%d-")*.xml'
 #
 
-import datetime, cgi, dateutil.parser, string, gzip, os, pwd, sys, re, json, xmltodict, matplotlib
+import datetime, dateutil.parser, string, gzip, os, pwd, sys, re, json, xmltodict, matplotlib
 import glob, collections, time
+import urllib.parse
 import matplotlib.pyplot as plt
 from lxml import html
 
@@ -358,14 +359,16 @@ def main():
         if "cache" in arg:      cache = True if arg.split("=", 1)[1].lower() == "true" else False
         if "cgienv" in arg:     cgienv = False if arg.split("=", 1)[1].lower() == "false" else True
         if "rehistory" in arg:  rehistory = False if arg.split("=", 1)[1].lower() == "false" else True
-    args = cgi.FieldStorage()
-    if "format" in args:    format = args["format"].value
-    if "report" in args:    report = args["report"].value
-    if "interval" in args:  interval = int(args["interval"].value)
-    if "shift" in args:     shift = int(args["shift"].value)
-    if "cache" in args:     cache = True if args["cache"].value.lower() == "true" else False
-    if "cgienv" in args:    cgienv = False if args["cgienv"].value.lower() == "false" else True
-    if "rehistory" in args: rehistory = False if args["rehistory"].value.lower() == "false" else True
+    # cgi.FieldStorage() was removed in Python 3.13 (PEP 594).
+    # Replace with urllib.parse to parse the CGI query string.
+    args = dict(urllib.parse.parse_qsl(os.environ.get("QUERY_STRING", "")))
+    if "format" in args:    format = args["format"]
+    if "report" in args:    report = args["report"]
+    if "interval" in args:  interval = int(args["interval"])
+    if "shift" in args:     shift = int(args["shift"])
+    if "cache" in args:     cache = True if args["cache"].lower() == "true" else False
+    if "cgienv" in args:    cgienv = False if args["cgienv"].lower() == "false" else True
+    if "rehistory" in args: rehistory = False if args["rehistory"].lower() == "false" else True
 
     if "secure" not in os.path.abspath(__file__):
         report = "last"

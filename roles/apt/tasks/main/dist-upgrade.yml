@@ -1,19 +1,19 @@
-- name: Remove outdate dist-upgrade flag file @remove_outdate_dist_upgrade_flag_file
+- name: Remove outdate dist-upgrade fact file @remove_outdate_dist_upgrade_fact_file
   block:
-    - name: Remove outdate dist-upgrade flag file Stat @remove_outdate_dist_upgrade_flag_file
+    - name: Remove outdate dist-upgrade fact file Stat @remove_outdate_dist_upgrade_fact_file
       find:
-        paths: /etc/ansible/
-        patterns: dist-upgrade
+        paths: /etc/ansible/facts.d/
+        patterns: dist_upgrade.fact
         age: 30d
       register: result
-    - name: Remove outdate dist-upgrade flag file File @remove_outdate_dist_upgrade_flag_file
+    - name: Remove outdate dist-upgrade fact file File @remove_outdate_dist_upgrade_fact_file
       file:
         path: "{{item.path}}"
         state: absent
       with_items: "{{result.files}}"
   tags:
     - ws
-    - remove_outdate_dist_upgrade_flag_file
+    - remove_outdate_dist_upgrade_fact_file
 
 - name: Switch to new kernel @switch_to_new_kernel
   block:
@@ -44,9 +44,9 @@
         update_cache: true
         upgrade: dist
       when: var_dist_upgrade
-    - name: Apt dist-upgrade Remove flag @apt_dist_upgrade
+    - name: Apt dist-upgrade Remove fact @apt_dist_upgrade
       file:
-        path: /etc/ansible/dist-upgrade
+        path: /etc/ansible/facts.d/dist_upgrade.fact
         state: absent
   tags:
     - ws

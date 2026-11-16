@@ -42,7 +42,7 @@
       notify: Fapolicyd reload rules
     - name: Fapolicyd active Copy @fapolicyd_active
       copy:
-        src: "{{playbook_dir}}/inventories/codename/{{ansible_distribution_major_version}}/files/fapolicyd/fapolicyd.trust"
+        src: "{{playbook_dir}}/inventories/distribution/{{ansible_distribution}}/{{ansible_distribution_major_version}}/files/fapolicyd/fapolicyd.trust"
         dest: /etc/fapolicyd/
         mode: go-rwx
       notify: Fapolicyd update
@@ -52,7 +52,7 @@
         dest: '/etc/fapolicyd/trust.d/'
         mode: '0640'
       with_fileglob:
-        - "{{playbook_dir}}/inventories/codename/{{ansible_distribution_major_version}}/files/fapolicyd/trust.d/*"
+        - "{{playbook_dir}}/inventories/distribution/{{ansible_distribution}}/{{ansible_distribution_major_version}}/files/fapolicyd/trust.d/*"
       notify: Fapolicyd update
     - name: Fapolicyd active Lineinfile @fapolicyd_active
       lineinfile:

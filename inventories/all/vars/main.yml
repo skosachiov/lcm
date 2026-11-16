@@ -1,5 +1,3 @@
-var_installation_type: workstation
-
 var_subnet: saint_denis_4_passage_du_cimetiere
 
 var_ansible_server: paris-ansible
@@ -29,6 +27,8 @@ var_clamav_server: paris-clamav.si.mi
 var_site_address: "default"
 var_geo_coord: [0.0, 0.0]
 var_company: gendarmerie
+
+var_installation_type: "{{ ansible_local.installation_type | default('workstation')}}"
 
 var_env: "{{ ansible_local.env | default('prod')}}"
 var_divice: "{{ ansible_local.device | default('workstation')}}"

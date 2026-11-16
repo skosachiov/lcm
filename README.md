@@ -65,15 +65,15 @@ Profiling is accomplished through a defined set of roles compiled into playbooks
 * distribution-point (a distribution point within an enterprise unit)
 * server (a general-purpose server), etc.
 
-Profiles support security flags (facts), such as:
+Profiles support security facts, such as:
 
-* mandatory-access (AppArmor, SELinux)
-* network-auditd (sending auditd data to a log server)
-* always-on-display (disabling display lock and shutdown)
-* unrestricted-os (users may boot other operating systems)
-* fs-userspace (file systems accessible to the user)
-* flash-drive (thin client mode on a USB drive)
-* dist-upgrade (host forcibly updates all packages), etc.
+* mandatory_access (AppArmor, SELinux)
+* network_auditd (sending auditd data to a log server)
+* always_on_display (disabling display lock and shutdown)
+* unrestricted_os (users may boot other operating systems)
+* fs_userspace (file systems accessible to the user)
+* flash_drive (thin client mode on a USB drive)
+* dist_upgrade (host forcibly updates all packages), etc.
 
 /etc/ansible/facts.d/mandatory_access.fact
 true
@@ -443,7 +443,7 @@ IP of the master DP must be in vars to avoid errors. It is advisable to perform 
 
 ## Deploy Slave Distribution Points
 
-Create host flag: `touch /etc/ansible/distribution-point`
+Create host fact: `echo distribution-point > /etc/ansible/facts.d/installation_type.fact`
 Slave DP have no ansible gits. IPs of slaves must be in lists to avoid errors.
 
 ## Deploy Workstation in install mode
@@ -467,7 +467,8 @@ sh late-script.sh
 
 ## Deploy administrative workstation in pull mode
 
-Create host flag: `touch /etc/ansible/admin-workstation`
+Create host fact: `echo admin > /etc/ansible/facts.d/profile.fact`
+
 ```
 wget http://example.test/git/lcm/late-script.sh
 sh late-script.sh
@@ -475,7 +476,8 @@ sh late-script.sh
 
 ## Deploy workstation mandatory access in pull mode
 
-Create host flag: `touch /etc/ansible/mandatory-access`
+Create host fact: `echo true > /etc/ansible/facts.d/mandatory_access.fact`
+
 ```
 wget http://example.test/git/lcm/late-script.sh
 sh late-script.sh
@@ -516,9 +518,9 @@ For information security purpose (check only).
 
 `ANSIBLE_DISPLAY_OK_HOSTS=no ANSIBLE_DISPLAY_SKIPPED_HOSTS=no sshpass -p password ansible-playbook -v --ask-pass -e "ansible_become_password=password" -b -i 192.168.122.174, -u ansible workstation.yml`
 
-## Set dist-upgrade flag
+## Set dist-upgrade fact
 
-Create flag: `touch /etc/ansible/dist-upgrade`
+Create host fact: `echo true > /etc/ansible/facts.d/dist_upgrade.fact`
 
 <a name="Lifecycle"></a>
 # Lifecycle

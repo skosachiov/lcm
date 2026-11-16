@@ -5,20 +5,17 @@
 #
 # curl --user "user:pass" --request POST --data '{"hostname":"name", "key":"value"}' https://example.com/cgi-bin/secure/read-post-req.py
 
-import cgi
-import cgitb
 import sys
 import os
 import json
 import html
 import fcntl
-
-cgitb.enable()
+import traceback
 
 POST_DIR = '/var/www/html/files/post/'
 MAX_PAYLOAD_SIZE = 16 * 1024 * 1024
 
-print('Content-type: text/html\n')
+print('Content-Type: text/plain\n')
 
 try:
     content_length = int(os.environ.get('CONTENT_LENGTH', 0))
@@ -77,8 +74,8 @@ try:
 
     print('OK')
 
-except Exception as e:
+except Exception:
+    traceback.print_exc(file=sys.stderr)
     print('ERROR: File transaction failed')
     sys.exit(1)
-
 
