@@ -16,7 +16,7 @@
           + : @{{var_domain_users_group}} : {{var_domain_users_group_access}}
           - : ALL : ALL
         insertafter: #
-      when: ansible_local.profile not in ["admin", "superadmin"]
+      when: var_profile not in ["admin", "superadmin"]
     - name: Set Access control table Admin @set_access_control_table
       blockinfile:
         dest: /etc/security/access.conf
@@ -28,7 +28,7 @@
           + : @{{var_domain_users_group}} : LOCAL
           - : ALL : ALL
         insertafter: #
-      when: ansible_local.profile in ["admin", "superadmin"]
+      when: var_profile in ["admin", "superadmin"]
   tags:
     - ws
     - sec

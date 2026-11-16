@@ -43,7 +43,7 @@
         - grub_nondefault.changed
         - efi_windows.stdout_lines|length > 0
   when:
-    - ansible_local.profile == "developer"
+    - var_profile == "developer"
   tags:
     - ws
     - dp

@@ -132,7 +132,7 @@
     - name: Ensure sysctl net ip forward is set to 0 ipv4 @sysctl_disable_net_forward
       sysctl:
         name: net.ipv4.ip_forward
-        value: "{{'1' if ansible_local.profile == 'developer' else '0'}}"
+        value: "{{'1' if var_profile == 'developer' else '0'}}"
         state: present
         reload: true
         ignoreerrors: true
@@ -178,7 +178,7 @@
     reload: true
     ignoreerrors: true
   when:
-    - ansible_local.profile == "developer"
+    - var_profile == "developer"
   loop:
     - ['kernel.kptr_restrict', '2']
     - ['net.core.bpf_jit_harden', '2']

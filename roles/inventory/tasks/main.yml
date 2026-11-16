@@ -220,14 +220,14 @@
       set_fact:
         result_flags: >
           {{ 'ma' if var_mandatory_access else '' }}
-          {{ 'aw' if ansible_local.profile == "admin" else '' }}
-          {{ 'sw' if ansible_local.profile == "superadmin" else '' }}
-          {{ 'dw' if ansible_local.profile == "developer" else '' }}
+          {{ 'aw' if var_profile == "admin" else '' }}
+          {{ 'sw' if var_profile == "superadmin" else '' }}
+          {{ 'dw' if var_profile == "developer" else '' }}
           {{ 'na' if var_network_auditd else '' }}
           {{ 'ao' if var_always_on_display else '' }}
           {{ 'uo' if var_unrestricted_os else '' }}
           {{ 'ro' if var_restricted_os else '' }}
-          {{ 'tc' if ansible_local.device == "thinclient" else '' }}
+          {{ 'tc' if var_device == "thinclient" else '' }}
           {{ 'he' if var_home_with_exec else '' }}
           {{ 'du' if var_dist_upgrade else '' }}
           {{ 'mu' if var_manual_updates else '' }}

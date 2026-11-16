@@ -64,7 +64,7 @@
     - name: Local admin password solution Failed
       debug:
         msg: "Local admin password solution failed"
-  when: ansible_local.profile in ["admin", "superadmin"]
+  when: var_profile in ["admin", "superadmin"]
   tags:
     - ws
     - sec

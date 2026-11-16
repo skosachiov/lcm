@@ -91,7 +91,7 @@
         state: "{{ 'present' if var_installation_type in ['workstation', 'developer-workstation'] else 'absent' }}"
       notify: Syslog-ng restarted
       when: 
-        - ansible_local.profile == "developer"
+        - var_profile == "developer"
     - name: Set syslog-ng access to remote loghost aux Set @set_unset_rsyslog_aux
       blockinfile:
         dest: /etc/syslog-ng/syslog-ng.conf
@@ -105,14 +105,14 @@
         state: "{{ 'present' if var_installation_type in ['workstation', 'developer-workstation'] else 'absent' }}"
       notify: Syslog-ng restarted
       when:
-        - ansible_local.profile == "developer"
+        - var_profile == "developer"
     - name: Set syslog-ng access to remote loghost aux Unset @set_unset_rsyslog_aux
       blockinfile:
         dest: /etc/syslog-ng/syslog-ng.conf
         marker_begin: BEGIN_REMOTE_AUX_LOG
         marker_end: END_REMOTE_AUX_LOG
         state: absent
-      when: not ansible_local.profile == "developer"
+      when: not var_profile == "developer"
   tags:
     - ws
     - sec

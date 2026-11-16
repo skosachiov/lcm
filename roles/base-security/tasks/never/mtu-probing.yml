@@ -5,7 +5,7 @@
     reload: true
     ignoreerrors: true
   when:
-    - ansible_local.profile == "developer"
+    - var_profile == "developer"
   tags:
     - ws
     - sec
