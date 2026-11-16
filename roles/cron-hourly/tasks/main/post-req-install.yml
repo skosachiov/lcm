@@ -35,7 +35,7 @@
         - tasks_present is defined
         - last_modified|int > (ansible_date_time.epoch|int - 60*60*72)
   when:
-    - var_workstation_profile == "developer"
+    - ansible_local.profile == "developer"
   tags:
     - ws
     - post_req_install

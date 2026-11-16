@@ -30,20 +30,19 @@ var_site_address: "default"
 var_geo_coord: [0.0, 0.0]
 var_company: gendarmerie
 
-var_workstation_profile: user
+ansible_local.profile: user
 
-var_network_auditd: false
-var_always_on_display: false
-var_unrestricted_os: false
-var_thin_client: false
-var_ad_server: false
-var_fs_userspace: false
-var_dist_upgrade: false
-var_consistent_upgrade: false
-var_manual_updates: false
-var_overlay_root_fs: false
-var_fapolicyd_service: false
-var_home_with_exec: false
+var_network_auditd: "{{ ansible_local.network_auditd | default(false)}}"
+var_always_on_display: "{{ ansible_local.always_on_display | default(false)}}"
+var_unrestricted_os: "{{ ansible_local.unrestricted_os | default(false)}}"
+var_ad_server: "{{ ansible_local.ad_server | default(false)}}"
+var_fs_userspace: "{{ ansible_local.fs_userspace | default(false)}}"
+var_dist_upgrade: "{{ ansible_local.dist_upgrade | default(false)}}"
+var_consistent_upgrade: "{{ ansible_local.consistent_upgrade | default(false)}}"
+var_manual_updates: "{{ ansible_local.manual_updates | default(false)}}"
+var_overlay_root_fs: "{{ ansible_local.overlay_root_fs | default(false)}}"
+var_fapolicyd_service: "{{ ansible_local.fapolicyd_service | default(false)}}"
+var_home_with_exec: "{{ ansible_local.home_with_exec | default(false)}}"
 
 var_no_proxy: "127.0.0.1,10.0.0.0/8,localhost,*.si.mi"
 

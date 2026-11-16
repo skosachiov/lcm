@@ -305,7 +305,7 @@
 
 - name: Set admin workstation @default
   set_fact:
-    var_workstation_profile: admin
+    ansible_local.profile: admin
   when: result.stat.exists
   tags: always
 
@@ -319,7 +319,7 @@
 
 - name: Set superadmin workstation @default
   set_fact:
-    var_workstation_profile: superadmin
+    ansible_local.profile: superadmin
   when: result.stat.exists
   tags: always
 
@@ -333,7 +333,7 @@
 
 - name: Set devel workstation @default
   set_fact:
-    var_workstation_profile: developer
+    ansible_local.profile: developer
   when: result.stat.exists
   tags: always
 
@@ -341,7 +341,7 @@
 
 - name: Include profile vars @default
   include_vars:
-    dir: "{{playbook_dir}}/inventories/profiles/{{var_workstation_profile}}/vars"
+    dir: "{{playbook_dir}}/inventories/profiles/{{ansible_local.profile}}/vars"
   tags: always
 
 # Set flag network auditd "na"
@@ -443,34 +443,6 @@
   when: result.stat.exists
   tags: always
 
-# Set flag thin client "tc"
-
-- name: Check file exists @default
-  stat:
-    path: /etc/ansible/thin-client
-  register: result
-  tags: always
-
-- name: Set thin client @default
-  set_fact:
-    var_thin_client: true
-  when: result.stat.exists
-  tags: always
-
-# Set flag kde desktop "kd"
-
-- name: Check kde-desktop @default
-  stat:
-    path: /etc/ansible/kde-desktop
-  register: result
-  tags: always
-
-- name: Set kde-desktop @default
-  set_fact:
-    var_preffered_desktop: kde
-  when: result.stat.exists
-  tags: always
-
 # Set flag fapolicyd service "fa"
 
 - name: Check fapolicyd-service @default
@@ -548,7 +520,7 @@
             paths: "{{ ['env/' ~ var_environment] if var_environment | default('') | length > 0 else [] }}"
 
           - name: profiles
-            paths: "{{ ['profiles/' ~ var_workstation_profile] if var_workstation_profile | default('') | length > 0 else [] }}"
+            paths: "{{ ['profiles/' ~ ansible_local.profile] if ansible_local.profile | default('') | length > 0 else [] }}"
 
           - name: distribution
             paths:

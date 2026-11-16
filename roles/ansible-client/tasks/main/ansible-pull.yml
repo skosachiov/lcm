@@ -3,7 +3,7 @@
     var_ansible_repo: "{{var_ansible_devel_repo}}"
     var_ansible_git: "https://{{var_ansible_fqdn}}/git/{{var_ansible_devel_repo}}"
   when:
-    - var_workstation_profile == "developer"
+    - ansible_local.profile == "developer"
   tags:
     - ws
     - ansible_developer_workstation
@@ -68,7 +68,7 @@
     - weekly
     - monthly
   when:
-    - var_workstation_profile == "developer"
+    - ansible_local.profile == "developer"
   tags:
     - ws
     - cron_periodic_ansible_pull
