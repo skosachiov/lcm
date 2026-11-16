@@ -27,6 +27,7 @@
          .{{var_local_domain}} = {{var_default_realm}}
          {{var_local_domain}} = {{var_default_realm}}
   tags:
+    - bl
     - ws
     - sec
     - krb5_conf

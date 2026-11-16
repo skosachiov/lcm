@@ -38,6 +38,7 @@
           # EOF
       notify: Cron restarted
   tags:
+    - bl
     - ws
     - cron_ansible_pull
 

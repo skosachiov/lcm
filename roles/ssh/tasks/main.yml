@@ -22,6 +22,7 @@
         validate: /usr/sbin/sshd -t -f %s
       notify: Sshd restarted
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -57,6 +58,7 @@
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
   tags:
+    - bl
     - ws
     - sec
     - sshd_disable_hostbased_auth
@@ -72,6 +74,7 @@
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
   tags:
+    - bl
     - ws
     - sec
     - sshd_ignorerhosts
@@ -102,6 +105,7 @@
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
   tags:
+    - bl
     - ws
     - sec
     - sshd_logingracetime
@@ -117,6 +121,7 @@
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
   tags:
+    - bl
     - ws
     - sec
     - sshd_disable_emptypasswords
@@ -162,6 +167,7 @@
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
   tags:
+    - bl
     - ws
     - sec
     - sshd_disable_userenvironment
@@ -195,6 +201,7 @@
         insertbefore: ^[#\s]*Match
         validate: /usr/sbin/sshd -t -f %s
   tags:
+    - bl
     - ws
     - sec
     - sshd_disable_root_login
@@ -225,6 +232,7 @@
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
   tags:
+    - bl
     - ws
     - sec
     - sshd_disable_x11forwarding

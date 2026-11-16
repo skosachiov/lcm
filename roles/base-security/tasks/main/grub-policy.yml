@@ -38,6 +38,7 @@
       notify: Update grub
   when: ansible_pkg_mgr == 'apt'
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -53,6 +54,7 @@
   failed_when: false
   when: ansible_pkg_mgr == 'apt'
   tags:
+    - bl
     - ws
     - sec
     - mob

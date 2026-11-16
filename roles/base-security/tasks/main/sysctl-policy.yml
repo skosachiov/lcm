@@ -7,6 +7,7 @@
     reload: true
     ignoreerrors: true
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -21,6 +22,7 @@
     reload: true
     ignoreerrors: true
   tags:
+    - bl
     - ws
     - sec
     - sysctl_fs_suid_dumpable
@@ -34,6 +36,7 @@
     reload: true
     ignoreerrors: true
   tags:
+    - bl
     - ws
     - sec
     - sysctl_kernel_randomize_va_space
@@ -70,6 +73,7 @@
         reload: true
         ignoreerrors: true
   tags:
+    - bl
     - ws
     - sec
     - sysctl_accept_source_route_0
@@ -83,6 +87,7 @@
     reload: true
     ignoreerrors: true
   tags:
+    - bl
     - ws
     - sec
     - sysctl_net_ipv4_icmp_echo_ignore_broadcasts
@@ -96,6 +101,7 @@
     reload: true
     ignoreerrors: true
   tags:
+    - bl
     - ws
     - sec
     - sysctl_net_ipv4_icmp_ignore_bogus_error_responses
@@ -109,6 +115,7 @@
     reload: true
     ignoreerrors: true
   tags:
+    - bl
     - ws
     - sec
     - sysctl_net_ipv4_conf_all_rp_filter
@@ -122,6 +129,7 @@
     reload: true
     ignoreerrors: true
   tags:
+    - bl
     - ws
     - sec
     - sysctl_net_ipv4_tcp_syncookies
@@ -144,6 +152,7 @@
         reload: true
         ignoreerrors: true
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -194,6 +203,7 @@
     - ['fs.protected_regular', '2']
     - ['kernel.yama.ptrace_scope', '1']
   tags:
+    - bl
     - ws
     - sec
     - sysctl_hardened

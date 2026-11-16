@@ -4,6 +4,7 @@
   register: dhclient_conf
   when: ansible_pkg_mgr == 'apt'
   tags:
+    - bl
     - ws
     - dhclient_conf_exists
 
@@ -23,6 +24,7 @@
     - ansible_pkg_mgr == 'apt'
     - dhclient_conf.stat.exists
   tags:
+    - bl
     - ws
     - comment_out_manual_dhclient
 

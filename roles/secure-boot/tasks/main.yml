@@ -13,6 +13,7 @@
       - unzip
   when: var_secure_boot
   tags:
+    - bl
     - ws
     - secure_boot_utils_present
 
@@ -46,6 +47,7 @@
         crypto_luks_device: "{{result.stdout}}"
   when: var_secure_boot
   tags:
+    - bl
     - ws
     - get_secure_boot_status
 
@@ -68,6 +70,7 @@
         mode: '0644'
   when: var_secure_boot
   tags:
+    - bl
     - ws
     - standard_luks_uuid
 
@@ -188,6 +191,7 @@
         mode: '0600'
   when: var_secure_boot
   tags:
+    - bl
     - ws
     - uki_download_and_extract
 
@@ -224,6 +228,7 @@
       when: result.changed
   when: var_secure_boot
   tags:
+    - bl
     - ws
     - uki_from_systemd_boot
 
@@ -303,6 +308,7 @@
       when: result_hash.rc != 0 or result_pubkey.rc != 0
   when: secure_boot_status
   tags:
+    - bl
     - ws
     - uki_cryptenroll
 

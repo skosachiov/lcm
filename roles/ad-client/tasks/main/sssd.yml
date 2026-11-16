@@ -15,6 +15,7 @@
         name: "{{['libnss-sss', 'libpam-sss'] if ansible_pkg_mgr == 'apt' else 'sssd-client'}}"
         state: present
   tags:
+    - bl
     - ws
     - sssd_packages_are_present
 
@@ -24,6 +25,7 @@
     name: sssd
     enabled: true
   tags:
+    - bl
     - ws
     - sssd_service_enabled
 
@@ -84,6 +86,7 @@
       notify: Sssd restarted
       when: stat_result.stat.exists and line_result is not changed
   tags:
+    - bl
     - ws
     - sec
     - check_existing_sssd_conf

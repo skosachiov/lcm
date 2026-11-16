@@ -15,6 +15,7 @@
       package_facts:
         manager: auto
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -54,6 +55,7 @@
         - '"chrony" in ansible_facts.packages'
   when: var_installation_type == "workstation" and var_internal_ansible_ip
   tags:
+    - bl
     - ws
     - sec
     - mob

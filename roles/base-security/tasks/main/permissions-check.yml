@@ -47,6 +47,7 @@
     recurse: true
   when:
   tags:
+    - bl
     - ws
     - sec
     - file_owner_and_permissions_grub_d
@@ -379,6 +380,7 @@
     mode: '0600'
   when: ansible_pkg_mgr == 'apt'
   tags:
+    - bl
     - ws
     - sec
     - mob

@@ -4,6 +4,7 @@
     dest: /etc/securetty
     content: ''
   tags:
+    - bl
     - ws
     - sec
     - no_direct_root_logins
@@ -15,6 +16,7 @@
     regexp: ^vc
     state: absent
   tags:
+    - bl
     - ws
     - sec
     - securetty_root_login_console_only

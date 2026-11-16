@@ -25,6 +25,7 @@
       when:
         - '"firewalld" in ansible_facts.packages'
   tags:
+    - bl
     - ws
     - service_firewalld_enabled
 
@@ -90,6 +91,7 @@
       when: var_installation_type == 'mobile-device' or var_installation_type == 'flash-drive'
       notify: Firewalld restarted
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -178,6 +180,7 @@
       with_items: "{{items.stdout.split()}}"
       when: item not in var_fw_target
   tags:
+    - bl
     - ws
     - sec
     - verify_firewalld_rules
@@ -214,6 +217,7 @@
           COMMIT
       when: not package_result.failed
   tags:
+    - bl
     - ws
     - sec
     - mob

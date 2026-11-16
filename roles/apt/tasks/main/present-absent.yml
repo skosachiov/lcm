@@ -49,6 +49,7 @@
   when: var_apt_absent | default([]) | length > 0
   ignore_errors: "{{ ansible_check_mode }}"
   tags:
+    - bl
     - ws
     - sec
     - mob

@@ -3,3 +3,5 @@
 - include_tasks: "{{ item }}"
   with_fileglob:
     - main/*.yml
+  tags:
+    - bl
