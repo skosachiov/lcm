@@ -320,33 +320,11 @@
   register: grub_nondefault
   tags: always
 
-# Debug
-
-- name: Show selected inventory selectors @default
-  ansible.builtin.debug:
-    msg: >-
-      branches={{ var_company | default('-') | lower }}
-      domains={{ var_local_domain | default('-') | lower }}
-      subnets={{ var_subnet | default('-') }}
-      env={{ var_environment | default('-') }}
-      devices={{ var_device | default('-') }}
-      profiles={{ var_profile | default('-') }}
-      distribution={{ ansible_facts['distribution'] }}/{{ ansible_facts['distribution_major_version'] }}
-  tags: always
-
-- name: Pause 10 seconds after selector debug @default
-  ansible.builtin.pause:
-    seconds: 10
-  tags: always
-
 # Build merged APT package lists
 
 - name: Build merged APT package lists @default
   tags: always
   block:
-
-    # Lowest -> highest priority
-    # Each level may contain multiple active directories
     - name: Define APT inventory levels @default
       ansible.builtin.set_fact:
         _apt_levels:
@@ -375,11 +353,6 @@
             paths:
               - "distribution/{{ ansible_facts['distribution'] }}/{{ ansible_facts['distribution_major_version'] }}"
 
-    # For each level:
-    # 1. Process ALL present files
-    # 2. Process ALL absent files
-    #
-    # This ensures absent wins within the entire level.
     - name: Generate ordered APT rule sources @default
       ansible.builtin.set_fact:
         _apt_sources: >-
@@ -401,7 +374,6 @@
       ansible.builtin.set_fact:
         _apt_package_rules: {}
 
-    # Validate original Debian dependency format
     - name: Validate APT entries @default
       ansible.builtin.assert:
         that:
@@ -429,9 +401,6 @@
         label: "{{ item.level }}: {{ item.path }}/{{ item.state }}.list }}"
       when: query('ansible.builtin.fileglob', _apt_file) | length > 0
 
-    # Merge by package name.
-    # Retain the full original package specification.
-    # Later rules override earlier rules.
     - name: Merge APT rules @default
       ansible.builtin.set_fact:
         _apt_package_rules: "{{ _apt_package_rules | combine(_apt_updates) }}"
