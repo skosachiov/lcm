@@ -422,13 +422,13 @@ The terminal service is provided through XRDP. The role configures accesses, dis
 
 ### Public git
 
-`ANSIBLE_FORCE_COLOR=true ansible-pull -i localhost, -c local --check -U https://github.com/skosachiov/lcm.git --tags ws workstation.yml`
+`ANSIBLE_DISPLAY_OK_HOSTS=true ANSIBLE_DISPLAY_SKIPPED_HOSTS=true ANSIBLE_FORCE_COLOR=true ansible-pull -i localhost, -c local --check -U https://github.com/skosachiov/lcm.git --tags ws workstation.yml`
 
-`ANSIBLE_FORCE_COLOR=true GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader GIT_CONFIG_VALUE_0="Authorization: Bearer ${TOKEN}" ansible-pull -i localhost, -c local --check -U https://acme.internal/projects/linux/lcm.git --tags ws,sec workstation.yml`
+`ANSIBLE_DISPLAY_OK_HOSTS=true ANSIBLE_DISPLAY_SKIPPED_HOSTS=true ANSIBLE_FORCE_COLOR=true GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader GIT_CONFIG_VALUE_0="Authorization: Bearer ${TOKEN}" ansible-pull -i localhost, -c local --check -U https://acme.internal/projects/linux/lcm.git --tags ws,sec workstation.yml`
 
 ### Private git
 
-`ANSIBLE_FORCE_COLOR=true ansible-pull -i localhost, -c local --check -U https://github_pat_1234...@github.com/private/lcm.git --tags ws workstation.yml`
+`ANSIBLE_DISPLAY_OK_HOSTS=true ANSIBLE_DISPLAY_SKIPPED_HOSTS=true ANSIBLE_FORCE_COLOR=true ansible-pull -i localhost, -c local --check -U https://github_pat_1234...@github.com/private/lcm.git --tags ws workstation.yml`
 
 ## Pre tasks for push mode
 

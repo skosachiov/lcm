@@ -405,28 +405,20 @@
         _apt_levels:
           - name: all
             paths: ['all']
-
           - name: branches
             paths: "{{ ['branches/' ~ (var_company | lower)] if var_company | default('') | length > 0 else [] }}"
-
           - name: domains
             paths: "{{ ['domains/' ~ (var_local_domain | lower)] if var_local_domain | default('') | length > 0 else [] }}"
-
           - name: subnets
             paths: "{{ ['subnets/' ~ var_subnet] if var_subnet | default('') | length > 0 else [] }}"
-
           - name: env
             paths: "{{ ['env/' ~ var_environment] if var_environment | default('') | length > 0 else [] }}"
-
           - name: devices
-            paths: "{{ ['env/' ~ var_device] if var_device | default('') | length > 0 else [] }}"
-
+            paths: "{{ ['devices/' ~ var_device] if var_device | default('') | length > 0 else [] }}"
           - name: profiles
             paths: "{{ ['profiles/' ~ var_profile] if var_profile | default('') | length > 0 else [] }}"
-
           - name: distribution
-            paths:
-              - "distribution/{{ ansible_facts['distribution'] }}/{{ ansible_facts['distribution_major_version'] }}"
+            paths: "distribution/{{ ansible_facts['distribution'] }}/{{ ansible_facts['distribution_major_version'] }}"
 
     - name: Generate ordered APT rule sources @default
       ansible.builtin.set_fact:
@@ -435,32 +427,19 @@
           {%- for level in _apt_levels -%}
             {%- for state in ['present', 'absent'] -%}
               {%- for path in level.paths | unique -%}
-                {%- set _ = ns.sources.append({
-                  'level': level.name,
-                  'path': path,
-                  'state': state
-                }) -%}
+                {%- set _ = ns.sources.append({'level': level.name, 'path': path, 'state': state}) -%}
               {%- endfor -%}
             {%- endfor -%}
           {%- endfor -%}
           {{ ns.sources }}
 
-    - name: Initialize merged APT rules @default
+    - name: Collect APT entries per state @default
       ansible.builtin.set_fact:
-        _apt_package_rules: {}
-
-    - name: Validate APT entries @default
-      ansible.builtin.assert:
-        that:
-          - (_apt_entries | reject('match', _apt_entry_pattern) | list | length) == 0
-        fail_msg: >-
-          Invalid entries in {{ _apt_file }}:
-          {{ _apt_entries | reject('match', _apt_entry_pattern) | list }}
-        quiet: true
+        _apt_present_entries: "{{ _apt_present_entries | default([]) + _entries }}"
+        _apt_absent_entries: "{{ _apt_absent_entries | default([]) + _entries }}"
       vars:
         _apt_file: "{{ playbook_dir }}/inventories/{{ item.path }}/files/apt/{{ item.state }}.list"
-
-        _apt_entries: >-
+        _entries: >-
           {{
             lookup('ansible.builtin.file', _apt_file).splitlines()
             | map('regex_replace', '#.*$', '')
@@ -468,65 +447,15 @@
             | reject('equalto', '')
             | list
           }}
-
-        _apt_entry_pattern: '^[a-z0-9][a-z0-9+.-]*(?::[a-z0-9-]+)?(?:\s*\(\s*(?:<<|<=|=|>=|>>)\s*[^()\s]+\s*\))?$'
-
       loop: "{{ _apt_sources }}"
       loop_control:
-        label: "{{ item.level }}: {{ item.path }}/{{ item.state }}.list }}"
+        label: "{{ item.level }}: {{ item.path }}/{{ item.state }}.list"
       when: query('ansible.builtin.fileglob', _apt_file) | length > 0
 
-    - name: Merge APT rules @default
-      ansible.builtin.set_fact:
-        _apt_package_rules: "{{ _apt_package_rules | combine(_apt_updates) }}"
-      vars:
-        _apt_file: "{{ playbook_dir }}/inventories/{{ item.path }}/files/apt/{{ item.state }}.list"
-
-        _apt_entries: >-
-          {{
-            lookup('ansible.builtin.file', _apt_file).splitlines()
-            | map('regex_replace', '#.*$', '')
-            | map('trim')
-            | reject('equalto', '')
-            | list
-          }}
-
-        _apt_updates: >-
-          {%- set ns = namespace(rules={}) -%}
-          {%- for entry in _apt_entries -%}
-            {%- set pkg = entry.split('(')[0] | trim -%}
-            {%- set _ = ns.rules.update({
-              pkg: {
-                'state': item.state,
-                'entry': entry
-              }
-            }) -%}
-          {%- endfor -%}
-          {{ ns.rules }}
-
-      loop: "{{ _apt_sources }}"
-      loop_control:
-        label: "{{ item.level }}: {{ item.path }}/{{ item.state }}.list }}"
-      when: query('ansible.builtin.fileglob', _apt_file) | length > 0
-
-    # Export final lists, preserving original format
     - name: Export final APT package lists @default
       ansible.builtin.set_fact:
-        var_apt_present: >-
-          {{
-            _apt_package_rules | dict2items
-            | selectattr('value.state', 'equalto', 'present')
-            | map(attribute='value.entry')
-            | sort | list
-          }}
-
-        var_apt_absent: >-
-          {{
-            _apt_package_rules | dict2items
-            | selectattr('value.state', 'equalto', 'absent')
-            | map(attribute='value.entry')
-            | sort | list
-          }}
+        var_apt_present: "{{ (_apt_present_entries | default([])) | unique | sort }}"
+        var_apt_absent: "{{ (_apt_absent_entries | default([])) | unique | sort }}"
 
     - name: Print merged APT package summary @default
       ansible.builtin.debug:
