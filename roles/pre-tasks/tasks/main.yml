@@ -216,12 +216,14 @@
       failed_when: false
     - name: Get ou Python uuid @default
       changed_when: false
-      command: /usr/bin/python3
+      ansible.builtin.command: /usr/bin/python3
       args:
         stdin: |
           import base64, uuid
-          print( str(uuid.UUID(bytes_le=base64.b64decode("{{ldap_search_ou_guid.stdout_lines[0].split()[1]}}"))) )
+          b64 = "{{ ldap_search_ou_guid.stdout_lines[0].split('::', 1)[1] | trim }}"
+          print(str(uuid.UUID(bytes_le=base64.b64decode(b64))))
       register: python_ou_guid
+      failed_when: false
     - name: Get ou Set fact @default
       set_fact:
         var_ou_dn: "{{ldap_search_ou_dn.stdout_lines[0]}}"
