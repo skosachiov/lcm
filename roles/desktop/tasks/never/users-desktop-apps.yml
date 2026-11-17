@@ -26,7 +26,7 @@
         src: "{{item}}"
         dest: "{{desktop_tmp_dir.path}}/{{item|basename}}"
       with_fileglob:
-        - "{{playbook_dir}}/inventories/branches/{{var_company|lower}}/files/desktop/applications/*"
+        - "{{playbook_dir}}/inventories/branches/{{var_branch|lower}}/files/desktop/applications/*"
     - name: Users desktop files Find files @users_desktop_files
       find:
         paths: "{{desktop_tmp_dir.path}}/"

@@ -104,7 +104,7 @@
           product_version: "{{ansible_product_version}}"
           os_version: "{{ lookup('ini', 'VERSION',  type='properties', file='/etc/os-release') }}"
           geo_coord: "{{var_geo_coord | replace(' ', '')}}"
-          company: "{{var_company}}"
+          company: "{{var_branch}}"
           ou: "{{var_ou_guid if var_ou_guid is defined else 'none'}}"
           users_apps: "{{users_apps_json}}"
           boot_parameters: "{{boot_parameters}}"

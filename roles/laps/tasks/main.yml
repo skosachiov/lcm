@@ -36,7 +36,7 @@
         src: "{{item}}"
         dest: "{{tmpfolder.path}}/{{item|basename}}"
       with_fileglob:
-        - "{{playbook_dir}}/inventories/branches/{{var_company|lower}}/files/laps/gpg/*.gpg"
+        - "{{playbook_dir}}/inventories/branches/{{var_branch|lower}}/files/laps/gpg/*.gpg"
     - name: Local admin password solution Find @local_admin_password_solution
       changed_when: false
       find:

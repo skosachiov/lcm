@@ -16,6 +16,6 @@ var_cups_printers:
 var_domain_admin_groups: ['gend_admins']
 var_clamav_server: les-abymes-clamav.si.mi
 var_site_address: "le_havre_44_quai_de_saone"
-var_company: ordnance
+var_branch: ordnance
 var_dp_fqdn: "{{var_ansible_fqdn}}"
 var_dp_rsyslog_server: "{{var_ansible_fqdn}}"

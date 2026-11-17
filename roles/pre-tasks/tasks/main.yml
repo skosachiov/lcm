@@ -317,11 +317,34 @@
   failed_when: false
   include_vars:
     file: "{{playbook_dir}}/inventories/branches/{{var_company|lower}}/vars/main.yml"
+  when: var_company | default('') | length > 0
   tags: always
 
 - name: Include subnet vars @default
   include_vars:
     file: "{{playbook_dir}}/inventories/subnets/{{var_subnet}}/vars/main.yml"
+  when: var_subnet | default('') | length > 0
+  tags: always
+
+- name: Include domain vars @default
+  include_vars:
+    file: "{{playbook_dir}}/inventories/domains/{{var_local_domain|lower}}/vars/main.yml"
+  failed_when: false
+  when: var_local_domain | default('') | length > 0
+  tags: always
+
+- name: Include env vars @default
+  include_vars:
+    file: "{{playbook_dir}}/inventories/env/{{var_environment}}/vars/main.yml"
+  failed_when: false
+  when: var_environment | default('') | length > 0
+  tags: always
+
+- name: Include device vars @default
+  include_vars:
+    file: "{{playbook_dir}}/inventories/devices/{{var_device}}/vars/main.yml"
+  failed_when: false
+  when: var_device | default('') | length > 0
   tags: always
 
 # Check Intranet/Internet environment

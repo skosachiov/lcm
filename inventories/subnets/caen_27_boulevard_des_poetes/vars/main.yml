@@ -15,6 +15,6 @@ var_cups_printers:
 var_domain_admin_groups: ['gend_admins']
 var_clamav_server: paris-clamav.si.mi
 var_site_address: "caen_27_boulevard_des_poetes"
-var_company: maritime
+var_branch: maritime
 var_dp_fqdn: "{{var_ansible_fqdn}}"
 var_dp_rsyslog_server: "{{var_ansible_fqdn}}"
