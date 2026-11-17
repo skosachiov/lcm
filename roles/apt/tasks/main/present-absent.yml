@@ -1,6 +1,11 @@
 - name: Ensure packages are installed @packages_are_installed
   ansible.builtin.apt:
-    name: '{{ var_apt_present | map("regex_replace", "\\s*\\(.*\\)$", "") | list }}'
+    name: >-
+      {{
+        var_apt_present
+        | map('regex_replace', '\s*\(.*\)$', '')
+        | list
+      }}
     state: latest
     update_cache: true
   when: var_apt_present | default([]) | length > 0
@@ -14,7 +19,12 @@
 
 - name: Ensure unnecessary packages are removed @packages_are_removed
   ansible.builtin.apt:
-    name: '{{ var_apt_absent | map("regex_replace", "\\s*\\(.*\\)$", "") | list }}'
+    name: >-
+      {{
+        var_apt_absent
+        | map('regex_replace', '\s*\(.*\)$', '')
+        | list
+      }}
     state: absent
   when: var_apt_absent | default([]) | length > 0
   ignore_errors: true
