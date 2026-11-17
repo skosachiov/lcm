@@ -182,38 +182,84 @@
   block:
     - name: Get ou Sssd status @default
       changed_when: false
-      shell: yes no | LANG=C.UTF8 /usr/sbin/sssctl domain-status {{var_local_domain}}
+      ansible.builtin.shell: yes no | LANG=C.UTF8 /usr/sbin/sssctl domain-status {{ var_local_domain }}
       register: sssctl_status
+      failed_when: false
+
     - name: Get ou Kinit @default
       changed_when: false
-      command: kinit -kt /etc/krb5.keytab '{{ansible_facts.nodename.split(".")[0]|upper}}$@{{var_default_realm}}'
+      ansible.builtin.command:
+        argv: [kinit, -kt, /etc/krb5.keytab, "{{ ansible_facts.nodename.split('.')[0] | upper }}$@{{ var_default_realm }}"]
+      failed_when: false
+
     - name: Get ou AD global catalog
       changed_when: false
-      shell: yes no | LANG=C.UTF8 /usr/sbin/sssctl domain-status {{var_local_domain}} | grep 'AD Global Catalog:' | awk '{print $4}'
+      ansible.builtin.shell: >-
+        yes no | LANG=C.UTF8 /usr/sbin/sssctl domain-status {{ var_local_domain }}
+        | grep 'AD Global Catalog:' | awk '{print $4}'
       register: global_ad_catalog
+      failed_when: false
+
+    - name: Assert AD global catalog found @default
+      ansible.builtin.assert:
+        that:
+          - global_ad_catalog.stdout_lines | default([]) | length > 0
+          - global_ad_catalog.stdout_lines[0] | default('') | length > 0
+        fail_msg: >-
+          Could not find 'AD Global Catalog:' for {{ var_local_domain }}.
+          rc={{ global_ad_catalog.rc | default('?') }}
+          stdout={{ global_ad_catalog.stdout | default('') | to_json }}
+        quiet: true
+
     - name: Get ou Ldapsearch ou @default
       changed_when: false
       ansible.builtin.shell: >-
-        ldapsearch -o ldif-wrap=no -Y GSSAPI
-        -H ldap://{{ global_ad_catalog.stdout_lines | default([]) | first | default('', true) | trim }}
+        ldapsearch -o ldif-wrap=no -LLL -Y GSSAPI
+        -H ldap://{{ global_ad_catalog.stdout_lines[0] | trim }}
         -b "dc={{ var_local_domain.split('.')[0] }},dc={{ var_local_domain.split('.')[1] }}"
-        "(&(objectClass=computer)(name={{ ansible_facts.nodename.split('.')[0] }}))"
-        | grep -i "dn:"
+        "(&(objectClass=computer)(name={{ ansible_facts.nodename.split('.')[0] }}))" dn
+        | grep -i '^dn:'
         | perl -MMIME::Base64 -n -00 -e 's/\n +//g;s/(?<=:: )(\S+)/decode_base64($1)/eg;print'
-        | grep -o -i '\(ou=[^,]*\),\(ou=[^,]*\),\(ou=[^,]*\),dc={{ var_local_domain.split('.')[0] }},dc={{ var_local_domain.split('.')[1] }}'
-        | sed -e 's/(/\\(/' -e 's/)/\\)/'
+        | sed -e 's/^dn:[[:space:]]*//' -e 's/(/\\(/g' -e 's/)/\\)/g'
       register: ldap_search_ou_dn
       failed_when: false
+
+    - name: Assert OU DN found @default
+      ansible.builtin.assert:
+        that:
+          - ldap_search_ou_dn.stdout_lines | default([]) | length > 0
+          - ldap_search_ou_dn.stdout_lines[0] | default('') | length > 0
+        fail_msg: >-
+          Could not find DN for computer {{ ansible_facts.nodename }}.
+          rc={{ ldap_search_ou_dn.rc | default('?') }}
+          stdout={{ ldap_search_ou_dn.stdout | default('') | to_json }}
+          stderr={{ ldap_search_ou_dn.stderr | default('') | to_json }}
+        quiet: true
+
     - name: Get ou Ldap_search giud @default
       changed_when: false
       ansible.builtin.shell: >-
-        ldapsearch -o ldif-wrap=no -Y GSSAPI
-        -H ldap://{{ global_ad_catalog.stdout_lines | default([]) | first | default('', true) | trim }}
+        ldapsearch -o ldif-wrap=no -LLL -Y GSSAPI
+        -H ldap://{{ global_ad_catalog.stdout_lines[0] | trim }}
         -b "dc={{ var_local_domain.split('.')[0] }},dc={{ var_local_domain.split('.')[1] }}"
-        "(&(objectClass=organizationalUnit)(distinguishedName={{ ldap_search_ou_dn.stdout_lines | default([]) | first | default('', true) | trim }}))"
-        | grep -i "objectGUID"
+        "(&(objectClass=organizationalUnit)(distinguishedName={{ ldap_search_ou_dn.stdout_lines[0] | trim }}))" objectGUID
+        | grep -i '^objectGUID' | head -n1
       register: ldap_search_ou_guid
       failed_when: false
+
+    - name: Assert objectGUID found @default
+      ansible.builtin.assert:
+        that:
+          - ldap_search_ou_guid.stdout_lines | default([]) | length > 0
+          - "'::' in (ldap_search_ou_guid.stdout_lines[0] | default(''))"
+          - (ldap_search_ou_guid.stdout_lines[0].split('::', 1)[1] | trim) | length > 0
+        fail_msg: >-
+          Could not find objectGUID for OU {{ ldap_search_ou_dn.stdout_lines[0] | default('?') }}.
+          rc={{ ldap_search_ou_guid.rc | default('?') }}
+          stdout={{ ldap_search_ou_guid.stdout | default('') | to_json }}
+          stderr={{ ldap_search_ou_guid.stderr | default('') | to_json }}
+        quiet: true
+
     - name: Get ou Python uuid @default
       changed_when: false
       ansible.builtin.command: /usr/bin/python3
@@ -224,17 +270,29 @@
           print(str(uuid.UUID(bytes_le=base64.b64decode(b64))))
       register: python_ou_guid
       failed_when: false
+
+    - name: Assert UUID parsed @default
+      ansible.builtin.assert:
+        that:
+          - python_ou_guid.rc | default(1) | int == 0
+          - python_ou_guid.stdout_lines | default([]) | length > 0
+          - python_ou_guid.stdout_lines[0] | default('') | length > 0
+        fail_msg: >-
+          Could not decode objectGUID from {{ ldap_search_ou_guid.stdout_lines[0] | default('?') }}.
+          rc={{ python_ou_guid.rc | default('?') }}
+          stderr={{ python_ou_guid.stderr | default('') | to_json }}
+        quiet: true
+
     - name: Get ou Set fact @default
-      set_fact:
-        var_ou_dn: "{{ldap_search_ou_dn.stdout_lines[0]}}"
-        var_ou_guid: "{{python_ou_guid.stdout_lines[0]}}"
-      when:
-        - ldap_search_ou_guid is defined
-        - python_ou_guid is defined
+      ansible.builtin.set_fact:
+        var_ou_dn: "{{ ldap_search_ou_dn.stdout_lines[0] | trim }}"
+        var_ou_guid: "{{ python_ou_guid.stdout_lines[0] | trim }}"
   rescue:
     - name: Get ou Failed to get ou @default
-      debug:
-        msg: "Failed to get ou"
+      ansible.builtin.debug:
+        msg: >-
+          Failed to get OU for {{ ansible_facts.nodename }} ({{ var_installation_type }}).
+          Continuing without var_ou_dn / var_ou_guid.
   when: var_installation_type == 'workstation'
   tags: always
 
