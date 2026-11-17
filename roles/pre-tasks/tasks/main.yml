@@ -320,6 +320,24 @@
   register: grub_nondefault
   tags: always
 
+# Debug
+
+- name: Show selected inventory selectors @default
+  ansible.builtin.debug:
+    msg: >-
+      branches={{ var_company | default('-') | lower }}
+      domains={{ var_local_domain | default('-') | lower }}
+      subnets={{ var_subnet | default('-') }}
+      env={{ var_environment | default('-') }}
+      devices={{ var_device | default('-') }}
+      profiles={{ var_profile | default('-') }}
+      distribution={{ ansible_facts['distribution'] }}/{{ ansible_facts['distribution_major_version'] }}
+  tags: always
+
+- name: Pause 10 seconds after selector debug @default
+  ansible.builtin.pause:
+    seconds: 10
+  tags: always
 
 # Build merged APT package lists
 
@@ -346,6 +364,9 @@
 
           - name: env
             paths: "{{ ['env/' ~ var_environment] if var_environment | default('') | length > 0 else [] }}"
+
+          - name: devices
+            paths: "{{ ['env/' ~ var_device] if var_device | default('') | length > 0 else [] }}"
 
           - name: profiles
             paths: "{{ ['profiles/' ~ var_profile] if var_profile | default('') | length > 0 else [] }}"
