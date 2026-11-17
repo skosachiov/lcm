@@ -63,7 +63,7 @@
     - role: unique-tasks
     - role: utmost-report
 
-  post_tasks:
-    - name: Debug
-      debug:
-        msg: "{{ansible_facts}}"
+  # post_tasks:
+  #   - name: Debug
+  #     debug:
+  #       msg: "{{ansible_facts}}"
