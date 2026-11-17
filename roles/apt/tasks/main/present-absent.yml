@@ -1,56 +1,167 @@
-# Install packages
+- name: Parse package specs (present)
+  ansible.builtin.set_fact:
+    _present_specs: >-
+      {{
+        var_apt_present
+        | map('regex_replace',
+              '^(\S+)\s*\(\s*(>=|=|<<|<=|>>)\s*([^()\s]+)\s*\)$',
+              '\1|\2|\3')
+        | map('regex_replace', '^([^|]+)$', '\1||')
+        | map('split', '|')
+        | map('zip', ['name', 'op', 'ver'])
+        | map('map', 'reverse')
+        | map('community.general.dict')
+        | list
+      }}
 
-- name: Validate APT package versions @packages_are_installed
-  ansible.builtin.assert:
-    that:
-      - >-
-        (
-          var_apt_present
-          | select('search', '\(\s*(<<|<=|>>)\s*')
-          | list | length
-        ) == 0
-    fail_msg: >-
-      APT module does not support <<, <= or >> version constraints.
-      Use APT pinning for these packages.
-  tags:
-    - ws
-    - packages_are_installed
+- name: Parse package specs (absent, drop version part)
+  ansible.builtin.set_fact:
+    _absent_specs: >-
+      {{
+        var_apt_absent
+        | map('regex_replace', '\s*\(.*\)$', '')
+        | map('regex_replace', '^(.+)$', '\1||')
+        | map('split', '|')
+        | map('zip', ['name', 'op', 'ver'])
+        | map('map', 'reverse')
+        | map('community.general.dict')
+        | list
+      }}
 
 - name: Ensure packages are installed @packages_are_installed
   ansible.builtin.apt:
     name: >-
       {{
-        var_apt_present
-        | map(
-            'regex_replace',
-            '^(\S+)\s*\(\s*(>=|=)\s*([^()\s]+)\s*\)$',
-            '\1\2\3'
-          )
+        _present_specs
+        | selectattr('op', 'in', ['=', ''])
+        | map(attribute='name')
+        | zip(_present_specs
+              | selectattr('op', 'in', ['=', ''])
+              | map(attribute='ver'))
+        | map('join', '=')
+        | map('regex_replace', '=$', '')
         | list
       }}
     state: latest
-  when: var_apt_present | default([]) | length > 0
-  ignore_errors: true
-  tags:
-    - ws
-    - packages_are_installed
+    update_cache: true
+  when: _present_specs | selectattr('op', 'in', ['=', '']) | list | length > 0
+  register: _apt_install
+  tags: [ws, packages_are_installed]
 
-# Remove packages
+- name: Install packages with range constraints (>=) — apt can't pin, so latest
+  ansible.builtin.apt:
+    name: >-
+      {{
+        _present_specs
+        | selectattr('op', 'eq', '>=')
+        | map(attribute='name')
+        | list
+      }}
+    state: latest
+  when: _present_specs | selectattr('op', 'eq', '>=') | list | length > 0
+  register: _apt_install_ge
+  tags: [ws, packages_are_installed]
 
 - name: Ensure unnecessary packages are removed @packages_are_removed
   ansible.builtin.apt:
     name: >-
       {{
-        var_apt_absent
-        | map('regex_replace', '\s*\(.*\)$', '')
+        _absent_specs
+        | map(attribute='name')
         | list
       }}
     state: absent
-  when: var_apt_absent | default([]) | length > 0
-  ignore_errors: "{{ ansible_check_mode }}"
-  tags:
-    - bl
-    - ws
-    - sec
-    - mob
-    - packages_are_removed
+  when: _absent_specs | length > 0
+  register: _apt_remove
+  tags: [bl, ws, sec, mob, packages_are_removed]
+
+- name: Query dpkg for the current installed version of every target package
+  ansible.builtin.command:
+    argv:
+      - dpkg-query
+      - -W
+      - -f=${Package}\t${Version}\n
+      - "{{ (_present_specs + _absent_specs) | map(attribute='name') | unique | list }}"
+  register: _dpkg_query
+  changed_when: false
+  failed_when: false
+
+- name: Build installed-packages fact (name -> version)
+  ansible.builtin.set_fact:
+    apt_installed: >-
+      {{
+        dict(
+          _dpkg_query.stdout_lines
+          | reject('search', '\s+no packages found')
+          | map('split', '\t')
+          | map('list')
+          | list
+        )
+      }}
+
+- name: Evaluate each 'present' spec against the new fact
+  ansible.builtin.shell: |
+    set -euo pipefail
+    pkg="{{ item.name }}"
+    want_op="{{ item.op }}"
+    want_ver="{{ item.ver }}"
+    got_ver="$(dpkg-query -W -f='${Version}' "$pkg" 2>/dev/null || true)"
+    if [ -z "$got_ver" ]; then
+      echo "MISSING|$pkg||$want_op$want_ver"
+      exit 0
+    fi
+    if [ -n "$want_ver" ] && [ -n "$want_op" ]; then
+      if dpkg --compare-versions "$got_ver" "$want_op" "$want_ver"; then
+        echo "OK|$pkg|$got_ver|$want_op$want_ver"
+      else
+        echo "VERSION_MISMATCH|$pkg|$got_ver|$want_op$want_ver"
+      fi
+    else
+      echo "OK|$pkg|$got_ver|"
+    fi
+  args:
+    executable: /bin/bash
+  loop: "{{ _present_specs }}"
+  loop_control:
+    label: "{{ item.name }} {{ item.op }}{{ item.ver }}"
+  register: _present_check
+  changed_when: false
+
+- name: Summarise verification results
+  ansible.builtin.set_fact:
+    apt_verify: >-
+      {{
+        _present_check.results
+        | map(attribute='stdout')
+        | map('split', '|')
+        | map('zip', ['status', 'name', 'installed', 'wanted'])
+        | map('community.general.dict')
+        | list
+      }}
+
+- name: Report verification
+  ansible.builtin.debug:
+    msg:
+      ok:               "{{ apt_verify | selectattr('status', 'eq', 'OK')               | list }}"
+      missing:          "{{ apt_verify | selectattr('status', 'eq', 'MISSING')          | list }}"
+      version_mismatch: "{{ apt_verify | selectattr('status', 'eq', 'VERSION_MISMATCH') | list }}"
+
+- name: Also verify absent packages are really gone
+  ansible.builtin.debug:
+    msg: >-
+      Still installed but should be absent:
+      {{ _absent_specs | map(attribute='name') | select('in', apt_installed) | list }}
+  when: >-
+    _absent_specs | map(attribute='name')
+    | select('in', apt_installed) | list | length > 0
+
+- name: Fail if any present package is missing or has the wrong version
+  ansible.builtin.assert:
+    that:
+      - apt_verify | selectattr('status', 'ne', 'OK') | list | length == 0
+    fail_msg: >-
+      Package verification failed. See the previous debug output for the
+      list of MISSING / VERSION_MISMATCH entries.
+    quiet: true
+  tags: [ws, packages_are_installed]
+
