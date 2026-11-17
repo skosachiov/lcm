@@ -143,19 +143,30 @@
 # Get time starttransfer
 
 - name: Get curl time starttransfer @default
+  tags: always
   block:
     - name: Get curl time starttransfer Shell @default
-      changed_when: false
-      shell: LANG=C.UTF-8 curl -w "%{time_starttransfer}" -o /dev/null -s https://{{var_ansible_fqdn}}
+      ansible.builtin.command:
+        argv: [curl, -sS, -o, /dev/null, -w, "%{time_starttransfer}", --max-time, "10", "https://{{ var_ansible_fqdn }}"]
+      environment: { LANG: C.UTF-8 }
       register: result
+      changed_when: false
+      failed_when: false
     - name: Get curl time starttransfer Set @default
-      set_fact:
-        var_time_starttransfer: "{{ 9.999999 if (result.stdout_lines[0]|float) == 0.000000 else (result.stdout_lines[0]|float) }}"
+      ansible.builtin.set_fact:
+        var_time_starttransfer: >-
+          {{ 9.999999 if (result.rc | default(0) | int) != 0
+             or (result.stdout | default('', true) | trim) is not match('^[0-9]+([.][0-9]+)?$')
+             or (result.stdout | default('', true) | trim | float) == 0.0
+             else (result.stdout | trim | float) }}
+    - name: Fail on curl error @default
+      ansible.builtin.fail:
+        msg: "curl failed for https://{{ var_ansible_fqdn }} (rc={{ result.rc | default('?') }}): {{ result.stderr | default('') | trim or 'no stderr' }}"
+      when: (result.rc | default(0) | int) != 0
   rescue:
     - name: Get curl time starttransfer Rescue @default
-      set_fact:
+      ansible.builtin.set_fact:
         var_time_starttransfer: 0.100000
-  tags: always
 
 # Do not continue if server load is high
 
