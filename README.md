@@ -420,6 +420,8 @@ The terminal service is provided through XRDP. The role configures accesses, dis
 
 ## Various options for starting ansible-pull in check mode
 
+`apt install ansible python3-apt`
+
 ### Public git
 
 `ANSIBLE_DISPLAY_OK_HOSTS=true ANSIBLE_DISPLAY_SKIPPED_HOSTS=true ANSIBLE_FORCE_COLOR=true ansible-pull -i localhost, -c local --check -U https://github.com/skosachiov/lcm.git --tags ws workstation.yml`
