@@ -155,7 +155,8 @@
     - name: Get curl time starttransfer Set @default
       ansible.builtin.set_fact:
         var_time_starttransfer: >-
-          {{ 9.999999 if (result.rc | default(0) | int) != 0
+          {{ 0.1 if result is skipped else
+             9.999999 if (result.rc | default(0) | int) != 0
              or (result.stdout | default('', true) | trim) is not match('^[0-9]+([.][0-9]+)?$')
              or (result.stdout | default('', true) | trim | float) == 0.0
              else (result.stdout | trim | float) }}
@@ -335,9 +336,9 @@
 
 - name: Include env vars @default
   include_vars:
-    file: "{{playbook_dir}}/inventories/env/{{var_environment}}/vars/main.yml"
+    file: "{{playbook_dir}}/inventories/env/{{var_env}}/vars/main.yml"
   failed_when: false
-  when: var_environment | default('') | length > 0
+  when: var_env | default('') | length > 0
   tags: always
 
 - name: Include device vars @default
@@ -361,7 +362,7 @@
       changed_when: false
     - name: Get ansible server IP @default
       set_fact:
-        var_internal_ansible_ip: "{{not result.failed}}"
+        var_internal_ansible_ip: "{{ result is succeeded and result is not skipped }}"
   tags: always
 
 - name: Get external ansible server IP @default
@@ -376,7 +377,7 @@
       changed_when: false
     - name: Get external ansible server IP @default
       set_fact:
-        var_external_ansible_ip: "{{not result.failed}}"
+        var_external_ansible_ip: "{{ result is succeeded and result is not skipped }}"
   tags: always
 
 - name: Include profile vars @default
@@ -441,7 +442,8 @@
           - name: profiles
             paths: "{{ ['profiles/' ~ var_profile] if var_profile | default('') | length > 0 else [] }}"
           - name: distribution
-            paths: "distribution/{{ ansible_facts['distribution'] }}/{{ ansible_facts['distribution_major_version'] }}"
+            paths:
+              - "distribution/{{ ansible_facts['distribution'] }}/{{ ansible_facts['distribution_major_version'] }}"
 
     - name: Generate ordered APT rule sources @default
       ansible.builtin.set_fact:
@@ -456,10 +458,15 @@
           {%- endfor -%}
           {{ ns.sources }}
 
+    - name: Initialize APT entries per state @default
+      ansible.builtin.set_fact:
+        _apt_entries_by_state:
+          present: []
+          absent: []
+
     - name: Collect APT entries per state @default
       ansible.builtin.set_fact:
-        _apt_present_entries: "{{ _apt_present_entries | default([]) + _entries }}"
-        _apt_absent_entries: "{{ _apt_absent_entries | default([]) + _entries }}"
+        _apt_entries_by_state: "{{ _apt_entries_by_state | combine({item.state: _apt_entries_by_state[item.state] + _entries}) }}"
       vars:
         _apt_file: "{{ playbook_dir }}/inventories/{{ item.path }}/files/apt/{{ item.state }}.list"
         _entries: >-
@@ -477,8 +484,8 @@
 
     - name: Export final APT package lists @default
       ansible.builtin.set_fact:
-        var_apt_present: "{{ (_apt_present_entries | default([])) | unique | sort }}"
-        var_apt_absent: "{{ (_apt_absent_entries | default([])) | unique | sort }}"
+        var_apt_present: "{{ _apt_entries_by_state.present | unique | sort }}"
+        var_apt_absent: "{{ _apt_entries_by_state.absent | unique | sort }}"
 
     - name: Print merged APT package summary @default
       ansible.builtin.debug:

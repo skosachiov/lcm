@@ -19,8 +19,6 @@
 
   environment:
     PATH: "{{ansible_env.PATH}}:/sbin:/usr/sbin:/usr/local/sbin"
-  vars_files:
-    - inventories/subnets/subnets.yml
 
   pre_tasks:
     # Set installation type (workstation/mobile-device/flash-drive/distribution-point/server)

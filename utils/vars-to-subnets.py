@@ -31,9 +31,9 @@ for file in glob.iglob(rootdir + "/**/" + suffix, recursive=True):
                         if ip_network(ip_net[0]).supernet_of(ip_network(n)):
                             print(ip_net[1], ip_net[0], "supernet_of", subpath, n)
                     ip_nets += [(n, subpath)]
-        except:
+        except Exception as exc:
             print("error in file: ", file)
-            print(e)
+            print(exc)
 with open(outfile, 'w') as f:
     f.write("# Please do not modify this file manually, use the script from the utils folder.\n\n")
     f.write(yaml.dump(subnets, default_flow_style=False))

@@ -194,7 +194,7 @@ def analize_logs(log_startswith, interval, shift, cache):
                 if "TASK [" in prevline:
                     a = line.split()
                     a[2] = str(dateutil.parser.parse(a[0] + " " + a[1] + " " + a[2]))
-                    role_and_task = re.search("\[(.*)\]", prevline).group(1).split(":")
+                    role_and_task = re.search(r"\[(.*)\]", prevline).group(1).split(":")
                     if len(role_and_task) > 1:
                         task = role_and_task[1].strip()
                         if "@" in task:
@@ -325,7 +325,7 @@ def read_daily_xml(shift = 0):
     if shift > 0 or not os.path.exists(fname):
         dt = datetime.datetime.now() - datetime.timedelta(shift)
         ts_date = dt.isoformat()
-        ts_date = re.search("\d{4}-[01]\d-[0-3]\d", ts_date)[0]
+        ts_date = re.search(r"\d{4}-[01]\d-[0-3]\d", ts_date)[0]
         fname = sorted(glob.glob(path_history_dir + "/usage-report-" + ts_date + "-*.xml"))[-1]
     with open(fname, 'r') as f:
         r = xmltodict.parse(f.read())
