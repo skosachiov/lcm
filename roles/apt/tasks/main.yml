@@ -6,4 +6,4 @@
   with_fileglob:
     - main/*.yml
   tags:
-    - bl
+    - always    

@@ -4,3 +4,6 @@
   with_fileglob:
     - main/*.yml
   when: ansible_os_family in ["Debian"]
+  tags:
+  - always    
+
