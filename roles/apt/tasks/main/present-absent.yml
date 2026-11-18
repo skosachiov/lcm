@@ -38,3 +38,51 @@
 - name: Gather installed package facts
   ansible.builtin.package_facts:
     manager: auto
+
+#
+
+- name: Read initial package list @read_initial_packages_list
+  ansible.builtin.slurp:
+    src: "{{playbook_dir}}/inventories/devices/{{var_device}}/apt/initial.list"
+  register: initial_list_raw
+  failed_when: false
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - read_initial_packages_list
+
+- name: Compare installed packages against initial.list @compare_with_initial_packages_list
+  when: initial_list_raw.content is defined
+  block:
+    - name: Compute missing and unwanted packages
+      ansible.builtin.set_fact:
+        initial_packages: >-
+          {{
+            (initial_list_raw.content | b64decode).splitlines()
+            | map('trim')
+            | reject('match', '^#')
+            | reject('equalto', '')
+            | list
+          }}
+        installed_packages: "{{ ansible_facts.packages.keys() | list }}"
+
+    - name: Determine missing and unwanted packages @compare_with_initial_packages_list
+      ansible.builtin.set_fact:
+        missing_packages: "{{ initial_packages | difference(installed_packages) | sort }}"
+        unwanted_packages: "{{ installed_packages | difference(initial_packages) | sort }}"
+
+    - name: Report package drift and set changed flag @compare_with_initial_packages_list
+      ansible.builtin.debug:
+        msg:
+          - "Missing packages ({{ missing_packages | length }}): {{ missing_packages }}"
+          - "Unwanted packages ({{ unwanted_packages | length }}): {{ unwanted_packages }}"
+      changed_when: >-
+        (missing_packages | length > 0) or (unwanted_packages | length > 0)
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - compare_with_initial_packages_list
