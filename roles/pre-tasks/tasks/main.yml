@@ -435,7 +435,7 @@
           - name: subnets
             paths: "{{ ['subnets/' ~ var_subnet] if var_subnet | default('') | length > 0 else [] }}"
           - name: env
-            paths: "{{ ['env/' ~ var_environment] if var_environment | default('') | length > 0 else [] }}"
+            paths: "{{ ['env/' ~ var_env] if var_env | default('') | length > 0 else [] }}"
           - name: devices
             paths: "{{ ['devices/' ~ var_device] if var_device | default('') | length > 0 else [] }}"
           - name: profiles

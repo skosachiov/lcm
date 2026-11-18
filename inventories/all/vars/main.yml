@@ -31,10 +31,10 @@ var_branch: gendarmerie
 var_installation_type: "{{ ansible_local.installation_type | default('workstation')}}"
 
 var_env: "{{ ansible_local.env | default('prod')}}"
-var_divice: "{{ ansible_local.device | default('workstation')}}"
+var_device: "{{ ansible_local.device | default('workstation')}}"
 var_profile: "{{ ansible_local.profile | default('user')}}"
 
-var_mandatory_access: "{{ ansible_local.mandatory_access | default(false)}}" 
+var_mandatory_access: "{{ ansible_local.mandatory_access | default(false)}}"
 var_network_auditd: "{{ ansible_local.network_auditd | default(false)}}"
 var_always_on_display: "{{ ansible_local.always_on_display | default(false)}}"
 var_unrestricted_os: "{{ ansible_local.unrestricted_os | default(false)}}"
