@@ -39,7 +39,7 @@
   ansible.builtin.package_facts:
     manager: auto
 
-#
+# Check initial list
 
 - name: Read initial package list @read_initial_packages_list
   ansible.builtin.slurp:
