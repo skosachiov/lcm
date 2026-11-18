@@ -1,3 +1,9 @@
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: auto
+  tags:
+    - always
+
 - name: Ensure packages are installed @packages_are_installed
   ansible.builtin.apt:
     name: >-
@@ -34,10 +40,6 @@
     - sec
     - mob
     - packages_are_removed
-
-- name: Gather installed package facts
-  ansible.builtin.package_facts:
-    manager: auto
 
 # Check initial list
 
