@@ -1,0 +1,115 @@
+- name: Enable service systemd-timesyncd @service_systemd_timesyncd_enabled
+  ignore_errors: "{{ansible_check_mode}}"
+  block:
+    - name: Ensure ntp is removed @service_systemd_timesyncd_enabled
+      package:
+        name: ntp
+        state: absent
+      failed_when: false
+    - name: Ensure chrony is removed @service_systemd_timesyncd_enabled
+      package:
+        name: chrony
+        state: absent
+      failed_when: false
+    - name: Ensure systemd-timesyncd is installed @service_systemd_timesyncd_enabled
+      package:
+        name: systemd-timesyncd
+        state: present
+      failed_when: false
+    - name: Gather the package facts @service_systemd_timesyncd_enabled
+      package_facts:
+        manager: auto
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - service_systemd_timesyncd_enabled
+
+- name: Systemd-timesyncd set internal pool @systemd_timesyncd_set_internal_pool
+  ignore_errors: "{{ansible_check_mode}}"
+  block:
+    - name: Ensure [Time] section exists @systemd_timesyncd_set_internal_pool
+      lineinfile:
+        path: /etc/systemd/timesyncd.conf
+        regexp: '^\[Time\]'
+        line: '[Time]'
+        create: true
+    - name: Systemd-timesyncd remove external NTP servers @systemd_timesyncd_set_internal_pool
+      replace:
+        path: /etc/systemd/timesyncd.conf
+        regexp: '^#?\s*(NTP|FallbackNTP)\s*=.*$'
+        replace: '# \1='
+    - name: Systemd-timesyncd server set @systemd_timesyncd_set_internal_pool
+      lineinfile:
+        path: /etc/systemd/timesyncd.conf
+        regexp: '^NTP\s*='
+        line: "NTP={{var_kdc.split(',')[0]}}"
+        insertafter: '^\[Time\]'
+        create: true
+    - name: Systemd-timesyncd disable fallback servers @systemd_timesyncd_set_internal_pool
+      lineinfile:
+        path: /etc/systemd/timesyncd.conf
+        regexp: '^FallbackNTP\s*='
+        line: "FallbackNTP="
+        insertafter: '^\[Time\]'
+    - name: Enable service systemd-timesyncd @systemd_timesyncd_set_internal_pool
+      systemd:
+        name: systemd-timesyncd
+        enabled: 'yes'
+        state: started
+        masked: no
+      failed_when: false
+      when:
+        - '"systemd-timesyncd" in ansible_facts.packages'
+  when: var_installation_type == "workstation" and var_internal_ansible_ip
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - systemd_timesyncd_set_internal_pool
+
+- name: Systemd-timesyncd tracking @service_systemd_timesyncd_tracking
+  block:
+    - name: Systemd-timesyncd tracking @service_systemd_timesyncd_tracking
+      shell: 'timedatectl show-timesync --property=Leap | grep "Leap=normal"'
+      register: items
+      changed_when: items.stdout_lines|length != 1
+      failed_when: false
+  tags:
+    - ws
+    - sec
+    - mob
+    - service_systemd_timesyncd_tracking
+
+- name: Ensure permission 0644 on systemd-timesyncd config @file_0644_timesyncd_conf
+  ignore_errors: "{{ansible_check_mode}}"
+  block:
+    - name: Ensure permission 0644 on /etc/systemd/timesyncd.conf @file_0644_timesyncd_conf
+      file:
+        path: /etc/systemd/timesyncd.conf
+        mode: u-x,go-wx
+        owner: root
+        group: root
+      failed_when: false
+    - name: Find timesyncd drop-in configs @file_0644_timesyncd_conf
+      find:
+        paths: /etc/systemd/timesyncd.conf.d
+        file_type: file
+        recurse: true
+      register: result
+      failed_when: false
+    - name: Ensure permission 0644 on timesyncd drop-in configs @file_0644_timesyncd_conf
+      file:
+        path: "{{item.path}}"
+        mode: u-x,go-wx
+        owner: root
+        group: root
+      with_items: "{{result.files | default([])}}"
+  tags:
+    - ws
+    - sec
+    - mob
+    - file_0644_timesyncd_conf
+    
