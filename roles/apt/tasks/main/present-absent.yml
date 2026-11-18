@@ -43,7 +43,7 @@
 
 - name: Read initial package list @read_initial_packages_list
   ansible.builtin.slurp:
-    src: "{{playbook_dir}}/inventories/devices/{{var_device}}/apt/initial.list"
+    src: "{{playbook_dir}}/inventories/devices/{{var_device}}/files/apt/initial.list"
   register: initial_list_raw
   failed_when: false
   check_mode: false
