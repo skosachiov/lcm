@@ -839,6 +839,7 @@ python3-zstandard
 python-apt-common
 python-babel-localedata
 qemu-guest-agent
+qemu-utils
 rake
 readline-common
 realmd
