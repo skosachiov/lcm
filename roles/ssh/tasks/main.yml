@@ -1,14 +1,8 @@
 - name: Ensure openssh-server is installed @openssh_server_is_installed
   ignore_errors: "{{ansible_check_mode}}"
-  block:
-    - name: Ensure openssh-server is installed @openssh_server_is_installed
-      package:
-        name: openssh-server
-        state: present
-    - name: Ensure openssh-server is started @openssh_server_is_started
-      service:
-        name: sshd
-        state: started
+  package:
+    name: openssh-server
+    state: present
   tags:
     - bl
     - ws
@@ -410,3 +404,14 @@
     - ws
     - sec
     - sshd_maxstartups
+
+- name: Ensure openssh-server is started @openssh_server_is_started
+  ignore_errors: "{{ansible_check_mode}}"
+  service:
+    name: sshd
+    enabled: true
+    state: started
+  tags:
+    - bl
+    - ws
+    - openssh_server_is_started
