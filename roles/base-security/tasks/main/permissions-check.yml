@@ -190,6 +190,7 @@
     group: shadow
   when: ansible_pkg_mgr == 'apt'
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -204,6 +205,7 @@
     group: shadow
   when: ansible_pkg_mgr == 'apt'
   tags:
+    - bl
     - ws
     - sec
     - file_0640_etc_gshadow
@@ -215,6 +217,7 @@
     group: '42'
   when: ansible_pkg_mgr == 'apt'
   tags:
+    - bl
     - ws
     - sec
     - file_groupowner_etc_shadow
@@ -226,6 +229,7 @@
     owner: '0'
     mode: '0600'
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -281,6 +285,7 @@
     mode: '0700'
   when:
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -347,6 +352,7 @@
     group: root
   when:
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -468,6 +474,7 @@
     group: root
   when:
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -491,6 +498,7 @@
         recurse: true
       with_items: "{{find_rc_d.files}}"
   tags:
+    - bl
     - ws
     - sec
     - set_rc_d_permissions
