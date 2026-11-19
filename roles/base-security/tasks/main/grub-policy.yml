@@ -131,3 +131,22 @@
     - mob
     - set_unset_unrestricted_os
 
+- name: Force changed when grub password file older than @grub_password_outdated
+  block:
+    - name: Stat /etc/grub.d/07_password
+      stat:
+        path: /etc/grub.d/07_password
+      register: grub_pw_stat
+    - name: Report changed when older
+      command: "true"
+      changed_when: >-
+        grub_pw_stat.stat.exists
+        and grub_pw_stat.stat.age > 7776000
+      notify: Update grub
+  when: ansible_pkg_mgr == 'apt'
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - grub_password_outdated
