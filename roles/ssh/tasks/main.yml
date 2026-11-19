@@ -408,7 +408,7 @@
 - name: Ensure openssh-server is started @openssh_server_is_started
   ignore_errors: "{{ansible_check_mode}}"
   service:
-    name: sshd
+    name: ssh
     enabled: true
     state: started
   tags:
