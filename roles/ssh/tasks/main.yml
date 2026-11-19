@@ -1,10 +1,16 @@
 - name: Ensure openssh-server is installed @openssh_server_is_installed
   ignore_errors: "{{ansible_check_mode}}"
-  package:
-    name:
-      - openssh-server
-    state: present
+  block:
+    - name: Ensure openssh-server is installed @openssh_server_is_installed
+      package:
+        name: openssh-server
+        state: present
+    - name: Ensure openssh-server is started @openssh_server_is_started
+      service:
+        name: sshd
+        state: started
   tags:
+    - bl
     - ws
     - openssh_server_is_installed
 
@@ -57,6 +63,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - bl
     - ws
@@ -73,6 +80,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - bl
     - ws
@@ -89,6 +97,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - ws
     - sec
@@ -104,6 +113,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - bl
     - ws
@@ -120,6 +130,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - bl
     - ws
@@ -136,6 +147,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - ws
     - sec
@@ -151,6 +163,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - ws
     - sec
@@ -166,6 +179,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - bl
     - ws
@@ -184,12 +198,14 @@
       check_mode: true
       changed_when: false
       register: dupes
+      notify: Sshd restarted
     - name: Deduplicate values from /etc/ssh/sshd_config @sshd_disable_root_login
       lineinfile:
         path: /etc/ssh/sshd_config
         create: false
         regexp: (?i)^\s*PermitRootLogin\s+
         state: absent
+      notify: Sshd restarted
       when: dupes.found is defined and dupes.found > 1
     - name: Insert correct line to /etc/ssh/sshd_config @sshd_disable_root_login
       lineinfile:
@@ -200,6 +216,7 @@
         state: present
         insertbefore: ^[#\s]*Match
         validate: /usr/sbin/sshd -t -f %s
+      notify: Sshd restarted
   tags:
     - bl
     - ws
@@ -216,6 +233,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - ws
     - sec
@@ -231,6 +249,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - bl
     - ws
@@ -249,12 +268,14 @@
       check_mode: true
       changed_when: false
       register: dupes
+      notify: Sshd restarted
     - name: Deduplicate values from /etc/ssh/sshd_config @sshd_set_idle_timeout
       lineinfile:
         path: /etc/ssh/sshd_config
         create: false
         regexp: (?i)^\s*ClientAliveInterval\s+
         state: absent
+      notify: Sshd restarted
       when: dupes.found is defined and dupes.found > 1
     - name: Insert correct line to /etc/ssh/sshd_config @sshd_set_idle_timeout
       lineinfile:
@@ -265,6 +286,7 @@
         state: present
         insertbefore: ^[#\s]*Match
         validate: /usr/sbin/sshd -t -f %s
+      notify: Sshd restarted
   tags:
     - ws
     - sec
@@ -282,12 +304,14 @@
       check_mode: true
       changed_when: false
       register: dupes
+      notify: Sshd restarted
     - name: Deduplicate values from /etc/ssh/sshd_config @sshd_set_keepalive
       lineinfile:
         path: /etc/ssh/sshd_config
         create: false
         regexp: (?i)^\s*ClientAliveCountMax\s+
         state: absent
+      notify: Sshd restarted
       when: dupes.found is defined and dupes.found > 1
     - name: Insert correct line to /etc/ssh/sshd_config @sshd_set_keepalive
       lineinfile:
@@ -298,6 +322,7 @@
         state: present
         insertbefore: ^[#\s]*Match
         validate: /usr/sbin/sshd -t -f %s
+      notify: Sshd restarted
   tags:
     - ws
     - sec
@@ -315,6 +340,7 @@
       check_mode: true
       changed_when: false
       register: dupes
+      notify: Sshd restarted
     - name: Deduplicate values from /etc/ssh/sshd_config @sshd_set_max_sessions
       lineinfile:
         path: /etc/ssh/sshd_config
@@ -322,6 +348,7 @@
         regexp: (?i)^\s*MaxSessions\s+
         state: absent
       when: dupes.found is defined and dupes.found > 1
+      notify: Sshd restarted
     - name: Insert correct line to /etc/ssh/sshd_config @sshd_set_max_sessions
       lineinfile:
         path: /etc/ssh/sshd_config
@@ -331,6 +358,7 @@
         state: present
         insertbefore: ^[#\s]*Match
         validate: /usr/sbin/sshd -t -f %s
+      notify: Sshd restarted
   tags:
     - ws
     - sec
@@ -349,6 +377,7 @@
         insertbefore: ^[#\s]*Match
         validate: /usr/sbin/sshd -t -f %s
       register: service_conf
+      notify: Sshd restarted
       when: var_profile not in ["admin", "superadmin"]
     - name: SSHD set AllowGroups Admin @sshd_set_allowgroups
       lineinfile:
@@ -376,6 +405,7 @@
     state: present
     insertbefore: ^[#\s]*Match
     validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
   tags:
     - ws
     - sec
