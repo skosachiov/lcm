@@ -133,15 +133,27 @@
 
 - name: Force changed when grub password file older than @grub_password_outdated
   block:
-    - name: Stat /etc/grub.d/07_password
-      stat:
-        path: /etc/grub.d/07_password
+    - name: Find grub password file containing pbkdf2 hash @grub_password_outdated
+      ansible.builtin.find:
+        paths:
+          - /etc/grub.d
+        file_type: file
+        recurse: true
+        contains: '(?i)pbkdf2'
+      register: grub_pbkdf2_files
+
+    - name: Stat grub password file @grub_password_outdated
+      ansible.builtin.stat:
+        path: "{{ item.path }}"
+      loop: "{{ grub_pbkdf2_files.files }}"
       register: grub_pw_stat
-    - name: Report changed when older
-      command: "true"
+
+    - name: Report changed when older @grub_password_outdated
+      ansible.builtin.command: "true"
       changed_when: >-
-        grub_pw_stat.stat.exists
-        and grub_pw_stat.stat.age > 7776000
+        item.stat.exists
+        and item.stat.age > (24 * 60 * 60 * 120)
+      loop: "{{ grub_pw_stat.results | default([]) }}"
       notify: Update grub
   when: ansible_pkg_mgr == 'apt'
   tags:
