@@ -9,7 +9,7 @@
         marker_end: END_GROUPS
         block: |
           + : {{var_ansible_username}} : ALL
-          + : {{var_local_admins_group}} : ALL
+          + : {{var_local_admin_group}} : ALL
           {% for element in var_domain_admin_groups %}
           + : {{ element|lower }} : ALL
           {% endfor %}
@@ -24,7 +24,7 @@
         marker_end: END_GROUPS
         block: |
           + : {{var_ansible_username}} : 127.0.0.1
-          + : {{var_local_admins_group}} : 127.0.0.1
+          + : {{var_local_admin_group}} : 127.0.0.1
           + : @{{var_domain_users_group}} : LOCAL
           - : ALL : ALL
         insertafter: #

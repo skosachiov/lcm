@@ -366,7 +366,7 @@
         path: /etc/ssh/sshd_config
         create: true
         regexp: ^\s*AllowGroups\s*
-        line: AllowGroups {{var_ansible_username}} {{var_domain_admin_groups|join(" ")|lower}} {{var_local_admins_group}}
+        line: AllowGroups {{var_ansible_username}} {{var_domain_admin_groups|join(" ")|lower}} {{var_local_admin_groups|join(" ")|lower}}
         state: present
         insertbefore: ^[#\s]*Match
         validate: /usr/sbin/sshd -t -f %s
@@ -378,7 +378,7 @@
         path: /etc/ssh/sshd_config
         create: true
         regexp: ^\s*AllowGroups\s*
-        line: AllowGroups {{var_ansible_username}} {{var_local_admins_group}}
+        line: AllowGroups {{var_ansible_username}} {{var_local_admin_groups|join(" ")|lower}}
         state: present
         insertbefore: ^[#\s]*Match
         validate: /usr/sbin/sshd -t -f %s
@@ -388,6 +388,37 @@
     - ws
     - sec
     - sshd_set_allowgroups
+
+- name: SSHD set AllowUsers @sshd_set_allowusers
+  ignore_errors: "{{ ansible_check_mode }}"
+  block:
+    - name: SSHD set AllowUsers User @sshd_set_allowusers
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        create: true
+        regexp: ^\s*AllowUsers\s*
+        line: AllowUsers {{ var_ansible_username }} {{var_domain_admin_users|join(" ")|lower}} {{var_local_admin_users|join(" ")|lower}}
+        state: present
+        insertbefore: ^[#\s]*Match
+        validate: /usr/sbin/sshd -t -f %s
+      register: service_conf
+      notify: Sshd restarted
+      when: var_profile not in ["admin", "superadmin"]
+    - name: SSHD set AllowUsers Admin @sshd_set_allowusers
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        create: true
+        regexp: ^\s*AllowUsers\s*
+        line: AllowUsers {{ var_ansible_username }} {{var_local_admin_users|join(" ")|lower}}
+        state: present
+        insertbefore: ^[#\s]*Match
+        validate: /usr/sbin/sshd -t -f %s
+      notify: Sshd restarted
+      when: var_profile in ["admin", "superadmin"]
+  tags:
+    - ws
+    - sec
+    - sshd_set_allowusers
 
 - name: SSHD MaxStartups @sshd_maxstartups
   ignore_errors: "{{ansible_check_mode}}"
@@ -415,3 +446,137 @@
     - bl
     - ws
     - openssh_server_is_started
+
+- name: SSHD disable AllowTcpForwarding @sshd_disable_tcp_forwarding
+  ignore_errors: "{{ ansible_check_mode }}"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    create: true
+    regexp: ^\s*#?\s*AllowTcpForwarding\s*
+    line: AllowTcpForwarding no
+    state: present
+    insertbefore: ^[#\s]*Match
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
+  tags:
+    - bl
+    - ws
+    - sec
+    - sshd_disable_tcp_forwarding
+
+- name: SSHD disable PermitTunnel @sshd_disable_permit_tunnel
+  ignore_errors: "{{ ansible_check_mode }}"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    create: true
+    regexp: ^\s*#?\s*PermitTunnel\s*
+    line: PermitTunnel no
+    state: present
+    insertbefore: ^[#\s]*Match
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
+  tags:
+    - bl
+    - ws
+    - sec
+    - sshd_disable_permit_tunnel
+
+- name: SSHD disable GatewayPorts @sshd_disable_gateway_ports
+  ignore_errors: "{{ ansible_check_mode }}"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    create: true
+    regexp: ^\s*#?\s*GatewayPorts\s*
+    line: GatewayPorts no
+    state: present
+    insertbefore: ^[#\s]*Match
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
+  tags:
+    - bl
+    - ws
+    - sec
+    - sshd_disable_gateway_ports
+
+- name: SSHD configure login banner @sshd_set_banner
+  ignore_errors: "{{ ansible_check_mode }}"
+  block:
+    - name: Create SSH warning banner file @sshd_set_banner
+      copy:
+        dest: /etc/issue.net
+        content: |
+          ***************************************************************************
+          AUTHORIZED ACCESS ONLY
+          Unauthorized access to this system is strictly prohibited. All connections
+          are monitored and recorded. Disconnect immediately if you are not an
+          authorized user.
+          ***************************************************************************
+        owner: root
+        group: root
+        mode: '0644'
+    - name: SSHD set Banner path @sshd_set_banner
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        create: true
+        regexp: ^\s*#?\s*Banner\s*
+        line: Banner /etc/issue.net
+        state: present
+        insertbefore: ^[#\s]*Match
+        validate: /usr/sbin/sshd -t -f %s
+      notify: Sshd restarted
+  tags:
+    - bl
+    - ws
+    - sec
+    - sshd_set_banner
+
+- name: SSHD disable PasswordAuthentication @sshd_disable_password_auth
+  ignore_errors: "{{ ansible_check_mode }}"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    create: true
+    regexp: ^\s*#?\s*PasswordAuthentication\s*
+    line: PasswordAuthentication no
+    state: present
+    insertbefore: ^[#\s]*Match
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
+  tags:
+    - bl
+    - ws
+    - sec
+    - sshd_disable_password_auth
+
+- name: SSHD disable KbdInteractiveAuthentication @sshd_disable_kbd_interactive
+  ignore_errors: "{{ ansible_check_mode }}"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    create: true
+    regexp: ^\s*#?\s*KbdInteractiveAuthentication\s*
+    line: KbdInteractiveAuthentication no
+    state: present
+    insertbefore: ^[#\s]*Match
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
+  tags:
+    - bl
+    - ws
+    - sec
+    - sshd_disable_kbd_interactive
+
+- name: SSHD set HostKeyAlgorithms to ssh-ed25519 @sshd_hostkey_algorithms
+  ignore_errors: "{{ ansible_check_mode }}"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    create: true
+    regexp: ^\s*#?\s*HostKeyAlgorithms\s*
+    line: HostKeyAlgorithms ssh-ed25519
+    state: present
+    insertbefore: ^[#\s]*Match
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Sshd restarted
+  tags:
+    - bl
+    - ws
+    - sec
+    - sshd_hostkey_algorithms

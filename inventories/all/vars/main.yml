@@ -56,8 +56,13 @@ var_ansible_git: "https://github.com/skosachiov/lcm.git"
 var_ansible_tags: ws
 var_ansible_tags_sec: sec
 var_inotify_printer: false
-var_local_admins_group: gend_admins
 var_domain_users_group: domain\ users
+#
+var_domain_admin_group:
+  - gend_admins 
+var_local_admin_group: []
+var_domain_admin_users: [] 
+var_local_admin_users: []
 # var_domain_users_group_access: LOCAL
 var_domain_users_group_access: ALL
 var_local_debian_repo: |
