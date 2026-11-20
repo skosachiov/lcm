@@ -1,11 +1,11 @@
-- name: Post req install @post_req_install
+- name: Post-requirements install @post_req_install
   ignore_errors: true
   block:
-    - name: Post req install Who @post_req_install
+    - name: Post-requirements install Who @post_req_install
       changed_when: false
       shell: who | awk '{print $1}'
       register: logged_in_users
-    - name: Post req install Uri @post_req_install
+    - name: Post-requirements install Uri @post_req_install
       failed_when: false
       changed_when: false
       uri:
@@ -16,11 +16,11 @@
         body_format: json
       register: users_pkgs
       with_items: "{{logged_in_users.stdout_lines | unique}}"
-    - name: Post req install Set @post_req_install
+    - name: Post-requirements install Set @post_req_install
       set_fact:
         pkgs_present: "{{(users_pkgs.results[0].content | from_json)['pkgs_present'] | intersect(var_post_req_apps)}}"
       when: users_pkgs is succeeded
-    - name: Post req install Package @post_req_install
+    - name: Post-requirements install Package @post_req_install
       package:
         name: "{{item}}"
         state: present

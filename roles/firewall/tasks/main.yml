@@ -97,18 +97,18 @@
     - mob
     - initial_firewalld_rules
 
-- name: Drop ougoing traffic @drop_outgoing_traffic
+- name: Drop outgoing traffic @drop_outgoing_traffic
   ignore_errors: "{{ansible_check_mode}}"
   block:
-    - name: Drop ougoing traffic Service started @drop_outgoing_traffic
+    - name: Drop outgoing traffic Service started @drop_outgoing_traffic
       service:
         name: firewalld
         state: started
-    - name: Drop ougoing traffic Ftp @drop_outgoing_traffic
+    - name: Drop outgoing traffic Ftp @drop_outgoing_traffic
       changed_when: false
       failed_when: no
       shell: firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 0 -p tcp -m tcp --dport=21 -j DROP
-    - name: Drop ougoing traffic Telnet @drop_outgoing_traffic
+    - name: Drop outgoing traffic Telnet @drop_outgoing_traffic
       changed_when: false
       failed_when: no
       shell: firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 0 -p tcp -m tcp --dport=23 -j DROP
@@ -223,12 +223,18 @@
     - mob
     - set_iptables_persistent
 
-- name: Disable netfilter-persistent # temporary workaround @check_listening_ports
+# Temporary workaround for Ubuntu 22.04
+- name: Disable netfilter-persistent @check_listening_ports
   ignore_errors: "{{ansible_check_mode}}"
   service:
     name: netfilter-persistent
     enabled: no
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int == 22
+  tags:
+    - ws
+    - sec
+    - mob
+    - check_listening_ports
 
 - name: Check listening ports @check_listening_ports
   ignore_errors: "{{ansible_check_mode}}"

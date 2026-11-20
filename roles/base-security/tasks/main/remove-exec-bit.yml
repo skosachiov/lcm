@@ -11,7 +11,7 @@
     - mob
     - remove_execution_bit
 
-- name: Set execution bit @var_set_exec_bit
+- name: Set execution bit @set_execution_bit
   ignore_errors: "{{ansible_check_mode}}"
   file:
     path: "{{item}}"

@@ -1,7 +1,7 @@
-- name: Post req install @post_req_install
+- name: Post-requirements install @post_req_install
   ignore_errors: true
   block:
-    - name: Post req install Uri @post_req_install
+    - name: Post-requirements install Uri @post_req_install
       failed_when: false
       changed_when: false
       uri:
@@ -11,7 +11,7 @@
         status_code: 200
         body_format: json
       register: users_pkgs
-    - name: Post req install Set tasks @post_req_install
+    - name: Post-requirements install Set tasks @post_req_install
       set_fact:
         pkgs_present: "{{(users_pkgs.content | from_json)['pkgs_present'] | reject('search', '.yml') | list}}"
         tasks_present: "{{(users_pkgs.content | from_json)['pkgs_present'] | select('search', '.yml') | list}}"
@@ -19,7 +19,7 @@
       when:
         - users_pkgs.status == 200
         - '"pkgs_present" in (users_pkgs.content | from_json)'
-    - name: Post req install Package @post_req_install
+    - name: Post-requirements install Package @post_req_install
       package:
         name: "{{item}}"
         state: present

@@ -1,0 +1,31 @@
+- name: Set fapolicyd MemoryMax @fapolicyd_memorymax
+  ignore_errors: "{{ansible_check_mode}}"
+  block:
+    - name: Set fapolicyd MemoryHigh @fapolicyd_memorymax
+      lineinfile:
+        create: true
+        dest: /usr/lib/systemd/system/fapolicyd.service
+        regexp: ^#?\s*MemoryHigh
+        line: MemoryHigh=512M
+        insertafter: \[Service\]
+      notify: Fapolicyd restarted
+    - name: Set fapolicyd MemoryMax @fapolicyd_memorymax
+      lineinfile:
+        create: true
+        dest: /usr/lib/systemd/system/fapolicyd.service
+        regexp: ^#?\s*MemoryMax
+        line: MemoryMax=768M
+        insertafter: \[Service\]
+      notify: Fapolicyd restarted
+    - name: Set fapolicyd MemorySwapMax @fapolicyd_memorymax
+      lineinfile:
+        create: true
+        dest: /usr/lib/systemd/system/fapolicyd.service
+        regexp: ^#?\s*MemorySwapMax
+        line: MemorySwapMax=0
+        insertafter: \[Service\]
+      notify: Fapolicyd restarted
+  tags:
+    - ws
+    - sec
+    - fapolicyd_memorymax

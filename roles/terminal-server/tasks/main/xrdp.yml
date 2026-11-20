@@ -10,7 +10,7 @@
 - name: Xrdp tuning @xrdp_tuning
   ignore_errors: "{{ansible_check_mode}}"
   block:
-    - name: Xrdp tunung Copy Xrdp logo file Copy @xrdp_tuning
+    - name: Xrdp tuning Copy Xrdp logo file @xrdp_tuning
       copy:
         src: "{{playbook_dir}}/{{var_xrdp_logo_file}}"
         dest: "/usr/share/xrdp/"

@@ -57,23 +57,23 @@
     - sec
     - usbguard_allowed_devices
 
-- name: Usbguard list devices @usbguad_list_devices
+- name: Usbguard list devices @usbguard_list_devices
   ignore_errors: "{{ansible_check_mode}}"
   block:
-    - name: Usbguard list devices List @usbguad_list_devices
+    - name: Usbguard list devices List @usbguard_list_devices
       command: usbguard list-devices
       register: command_output
       failed_when: false
       changed_when: false
-    - name: Usbguard list devices Debug @usbguad_list_devices
+    - name: Usbguard list devices Debug @usbguard_list_devices
       debug:
         msg: "{{command_output.stdout.split('\n')}}"
   tags:
     - ws
     - sec
-    - usbguad_list_devices
+    - usbguard_list_devices
 
-- name: Usbguard linter @usbguad_linter
+- name: Usbguard linter @usbguard_linter
   ignore_errors: "{{ansible_check_mode}}"
   lineinfile:
     path: /etc/usbguard/rules.conf
@@ -83,7 +83,7 @@
   tags:
       - ws
       - sec
-      - usbguad_linter
+      - usbguard_linter
 
 - name: Ensure usbguard is active @usbguard_is_active
   ignore_errors: "{{ansible_check_mode}}"

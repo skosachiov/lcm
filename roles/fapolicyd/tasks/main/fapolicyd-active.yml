@@ -4,7 +4,7 @@
     - name: Fapolicyd active Package facts @fapolicyd_active
       package_facts:
         manager: auto
-    - name: Fapolicyd active Mask if no present @fapolicyd_active
+    - name: Fapolicyd active Mask if not present @fapolicyd_active
       command: systemctl mask fapolicyd
       when: ansible_facts.packages['fapolicyd'] is undefined
     - name: Fapolicyd active Present @fapolicyd_active

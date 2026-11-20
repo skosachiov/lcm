@@ -1,19 +1,19 @@
-- name: Remove outdate dist-upgrade fact file @remove_outdate_dist_upgrade_fact_file
+- name: Remove outdated dist-upgrade fact file @remove_outdated_dist_upgrade_fact_file
   block:
-    - name: Remove outdate dist-upgrade fact file Stat @remove_outdate_dist_upgrade_fact_file
+    - name: Remove outdated dist-upgrade fact file Stat @remove_outdated_dist_upgrade_fact_file
       find:
         paths: /etc/ansible/facts.d/
         patterns: dist_upgrade.fact
         age: 30d
       register: result
-    - name: Remove outdate dist-upgrade fact file File @remove_outdate_dist_upgrade_fact_file
+    - name: Remove outdated dist-upgrade fact file File @remove_outdated_dist_upgrade_fact_file
       file:
         path: "{{item.path}}"
         state: absent
       with_items: "{{result.files}}"
   tags:
     - ws
-    - remove_outdate_dist_upgrade_fact_file
+    - remove_outdated_dist_upgrade_fact_file
 
 - name: Switch to new kernel @switch_to_new_kernel
   block:

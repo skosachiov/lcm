@@ -20,17 +20,17 @@
         - "{{var_desktop_symlinks}}"
         - "{{desktopdirs.files}}"
   rescue:
-    - name: Failed to copy users desktop files
+    - name: Report failure to copy users desktop files
       debug:
         msg: "Failed to copy users desktop files"
   tags:
     - ws
     - users_desktop_symlinks
 
-- name: Users desktop files remove Find home @users_desktop_files
+- name: Users desktop files remove @users_desktop_files_remove
   ignore_errors: "{{ansible_check_mode}}"
   block:
-    - name: Users desktop files remove Find home @users_desktop_files
+    - name: Users desktop files remove Find home @users_desktop_files_remove
       find:
         paths: /home
         recurse: true
@@ -38,7 +38,7 @@
         patterns: "Desktop"
         file_type: any
       register: desktopdirs
-    - name: Users desktop files remove Copy @users_desktop_files
+    - name: Users desktop files remove Copy @users_desktop_files_remove
       file:
         path: "{{item.1.path}}/{{item.0}}"
         state: absent
@@ -46,7 +46,7 @@
         - "{{var_desktop_files_remove}}"
         - "{{desktopdirs.files}}"
   rescue:
-    - name: Failed to remove users desktop files
+    - name: Report failure to remove users desktop files
       debug:
         msg: "Failed to remove users desktop files"
   tags:

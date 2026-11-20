@@ -237,7 +237,7 @@
           stderr={{ ldap_search_ou_dn.stderr | default('') | to_json }}
         quiet: true
 
-    - name: Get ou Ldap_search giud @default
+    - name: Get ou Ldapsearch guid @default
       changed_when: false
       ansible.builtin.shell: >-
         ldapsearch -o ldif-wrap=no -LLL -Y GSSAPI
@@ -401,7 +401,7 @@
   changed_when: false
   tags: always
 
-- name: Copy skip check cert conf @include_tasks
+- name: Copy skip check cert conf @copy_skip_check_cert_conf
   copy:
     src: "{{playbook_dir}}/roles/pre-tasks/files/nocheckcert.conf"
     dest: /etc/apt/apt.conf.d/nocheckcert.conf

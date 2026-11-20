@@ -31,20 +31,20 @@
     - ws
     - monitor_applications
 
-- name: Get_boot_parameters @get_boot_parameters
+- name: Get boot parameters @get_boot_parameters
   ignore_errors: "{{ansible_check_mode}}"
   block:
-    - name: Get_boot_parameters Efibootmgr @get_boot_parameters
+    - name: Get boot parameters Efibootmgr @get_boot_parameters
       failed_when: false
       changed_when: false
       command: efibootmgr
       register: boot_efi
-    - name: Get_boot_parameters Grub @get_boot_parameters
+    - name: Get boot parameters Grub @get_boot_parameters
       failed_when: false
       changed_when: false
       shell: grep ^GRUB_DEFAULT /etc/default/grub | tr -d \'\"
       register: boot_grub
-    - name: Get_boot_parameters Set @get_boot_parameters
+    - name: Get boot parameters Set @get_boot_parameters
       changed_when: false
       set_fact:
         boot_parameters:

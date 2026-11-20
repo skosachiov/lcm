@@ -29,7 +29,7 @@
     - ws
     - sssd_service_enabled
 
-- name: Sssd-kcm service Enabled @sssd_service_enabled
+- name: Sssd-kcm service Enabled @sssd_kcm_service_enabled
   ignore_errors: "{{ansible_check_mode}}"
   service:
     name: sssd-kcm

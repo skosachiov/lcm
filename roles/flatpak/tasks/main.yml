@@ -1,11 +1,11 @@
-- name: Flatpak installed @flatpak_intsalled
+- name: Flatpak installed @flatpak_installed
   ignore_errors: "{{ansible_check_mode}}"
   package:
     name: flatpak
     state: latest
   tags:
     - ws
-    - flatpak_intsalled
+    - flatpak_installed
 
 - name: Ensure flathub installed in system space @flatpak_remote_add
   ignore_errors: "{{ansible_check_mode}}"

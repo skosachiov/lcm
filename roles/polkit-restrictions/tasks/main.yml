@@ -1,4 +1,4 @@
-- name: Check lock-session policy @install_python_lxml
+- name: Install python3-lxml @install_python_lxml
   ignore_errors: "{{ansible_check_mode}}"
   package:
     name: python3-lxml

@@ -31,7 +31,7 @@
 - name: SSHD Only Approved Macs @sshd_only_approved_macs
   ignore_errors: "{{ansible_check_mode}}"
   block:
-    - name: SSHD Only Approved Ciphers Macs @sshd_only_approved_macs
+    - name: SSHD Only Approved Macs @sshd_only_approved_macs
       lineinfile:
         path: /etc/ssh/sshd_config
         create: true
@@ -147,7 +147,7 @@
     - sec
     - sshd_set_maxauthtries
 
-- name: SSHD disable PermitRootLogin @sshd_set_maxauthtries
+- name: SSHD disable PermitRootLogin @sshd_disable_root_login
   ignore_errors: "{{ansible_check_mode}}"
   lineinfile:
     path: /etc/ssh/sshd_config
@@ -161,7 +161,7 @@
   tags:
     - ws
     - sec
-    - sshd_set_maxauthtries
+    - sshd_disable_root_login
 
 - name: SSHD disable PermitUserEnvironment @sshd_disable_userenvironment
   ignore_errors: "{{ansible_check_mode}}"
@@ -389,7 +389,7 @@
     - sec
     - sshd_set_allowgroups
 
-- name: SSHD LogLevel info @sshd_maxstartups
+- name: SSHD MaxStartups @sshd_maxstartups
   ignore_errors: "{{ansible_check_mode}}"
   lineinfile:
     path: /etc/ssh/sshd_config

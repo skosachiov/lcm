@@ -108,10 +108,10 @@
     - mob
     - auditd_enriched_log_format
 
-- name: Configure audspd q_depth @audispd_conf_q_depth
+- name: Configure audispd q_depth @audispd_conf_q_depth
   ignore_errors: "{{ansible_check_mode}}"
   block:
-    - name: Configure audspd q_depth Change @audispd_conf_q_depth
+    - name: Configure audispd q_depth Change @audispd_conf_q_depth
       lineinfile:
         dest: /etc/audisp/audispd.conf
         line: q_depth = 512

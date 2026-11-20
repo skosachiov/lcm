@@ -1,12 +1,18 @@
 - include_tasks: roles/desktop/tasks/main/notify-send-all.yml
 
-- name: Dump all play_stats
+- name: Dump all play stats @dump_all_play_stats
   copy:
     content: "{{ ansible_facts | to_json }}"
     dest: /etc/ansible/ansible_facts.json
     mode: '0644'
+  tags:
+    - always
+    - dump_all_play_stats
 
-- name: Print main ansible facts @basic_security_facts
+- name: Log utmost report marker @log_utmost_report_marker
   changed_when: false
   ignore_errors: true
   command: 'logger "utmost_report: you are here"'
+  tags:
+    - always
+    - log_utmost_report_marker

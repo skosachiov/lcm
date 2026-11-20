@@ -1,4 +1,4 @@
-- name: Dhclient_conf_exists @dhclient_conf_exists
+- name: Dhclient conf exists @dhclient_conf_exists
   stat:
     path: /etc/dhcp/dhclient.conf
   register: dhclient_conf
@@ -28,7 +28,7 @@
     - ws
     - comment_out_manual_dhclient
 
-- name: Dhclient send hardware id @comment_out_manual_dhclient
+- name: Dhclient send hardware id @dhclient_send_hardware_id
   lineinfile:
     create: true
     dest: /etc/dhcp/dhclient.conf

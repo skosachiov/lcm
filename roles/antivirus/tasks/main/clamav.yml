@@ -23,7 +23,7 @@
     - ws
     - clamav_set_mirror
 
-- name: Clamd on access scanning @clamad_on_access_scanning
+- name: Clamd on access scanning @clamd_on_access_scanning
   ignore_errors: "{{ansible_check_mode}}"
   blockinfile:
     dest: /etc/clamav/clamd.conf
@@ -38,4 +38,4 @@
   when: ansible_pkg_mgr == 'apt'
   tags:
     - ws
-    - clamad_on_access_scanning
+    - clamd_on_access_scanning

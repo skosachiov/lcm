@@ -71,7 +71,7 @@
     - ws
     - sec
     - mob
-    - check_normal_grub_cmdline
+    - check_normal_grub_entries
 
 - name: Set grub cmdline @set_grub_cmdline
   ignore_errors: "{{ansible_check_mode}}"
@@ -100,7 +100,7 @@
     - mob
     - set_grub_timeout
 
-- name: Set-unset unrestricted os @set_unset_unrestricted_os
+- name: Set or unset unrestricted OS @set_unset_unrestricted_os
   ignore_errors: "{{ansible_check_mode}}"
   block:
     - name: Find all of the files inside this directory
@@ -108,7 +108,7 @@
         paths: "/etc/grub.d/"
         patterns: "*_os-prober"
       register: result
-    - name: Set-unset unrestricted os Set @set_unset_unrestricted_os
+    - name: Set or unset unrestricted OS Set @set_unset_unrestricted_os
       replace:
         path: "{{item.path}}"
         regexp: '(\-\-class os) \\'
@@ -116,7 +116,7 @@
       notify: Update grub
       when: var_unrestricted_os
       with_items: "{{result.files}}"
-    - name: Set-unset unrestricted os Unset @set_unset_unrestricted_os
+    - name: Set or unset unrestricted OS Unset @set_unset_unrestricted_os
       replace:
         path: "{{item.path}}"
         regexp: '\-\-unrestricted'
