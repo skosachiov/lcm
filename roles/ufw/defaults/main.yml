@@ -1,0 +1,96 @@
+# Which "zone" is the default for this installation type (used for policy)
+var_ufw_zone: "{{ 'work' if var_installation_type in ['workstation','distribution-point'] else 'public' }}"
+
+# Which zones are active (flattened into the single global UFW rule set)
+var_ufw_active_zones: "{{ ['work','trusted','dmz'] if var_installation_type in ['workstation','distribution-point'] else ['public'] }}"
+
+# UFW logging: off | low | medium | high | full
+var_ufw_logging: "off"
+
+# ---------------------------------------------------------------------------
+# Zone definitions — the "zone paradigm" mapped onto UFW rules
+#   * policy_in / policy_out : informational; incoming is always deny
+#   * rules: each rule becomes an `allow in` rule; optional `from` scopes it
+#   * when_profile: only applied if var_profile matches
+# ---------------------------------------------------------------------------
+var_ufw_zones:
+
+  drop:
+    policy_in: deny
+    policy_out: allow
+    rules: []
+
+  public:                          # mobile-device / flash-drive default
+    policy_in: deny
+    policy_out: allow
+    rules:
+      - {port: 22,   proto: tcp, comment: ssh}
+      - {port: 3389, proto: tcp, comment: rdp}
+
+  work:                            # workstation / distribution-point default
+    policy_in: deny
+    policy_out: allow
+    rules:
+      - {port: 88,    proto: tcp}
+      - {port: 88,    proto: udp}
+      - {port: 15000, proto: udp}
+      - {port: 22,    proto: tcp}
+      - {port: 3389,  proto: tcp}
+
+  dmz:
+    policy_in: deny
+    policy_out: allow
+    rules:
+      - {from: 10.10.99.99/24, port: 3389, proto: tcp}
+
+  trusted:
+    policy_in: deny
+    policy_out: allow
+    rules:
+      - {from: 10.10.11.11,     port: 22,   proto: tcp}
+      - {from: 10.10.11.11,     port: 3389, proto: tcp}
+      - {from: 192.168.122.1,   port: 22,   proto: tcp, when_profile: developer}
+
+# Distribution-point adds web + syslog ports on top of the work zone
+var_ufw_work_extra_rules: "{{ [ {'port':80,'proto':'tcp'}, {'port':443,'proto':'tcp'}, {'port':514,'proto':'udp'} ] if var_installation_type == 'distribution-point' else [] }}"
+
+# ---------------------------------------------------------------------------
+# Outgoing filter — ORDER MATTERS (first match wins).
+#   10.10.0.0/16  is a subset of 10.0.0.0/8, so the specific ALLOW must be
+#   inserted BEFORE the broader REJECT.
+# ---------------------------------------------------------------------------
+var_ufw_outgoing:
+  - {to: 10.10.0.0/16, action: allow }   # allowed private range
+  - {to: 10.0.0.0/8,   action: reject}   # deny rest of RFC1918
+  - {port: 21, proto: tcp, action: deny} # legacy: block ftp-out
+  - {port: 23, proto: tcp, action: deny} # legacy: block telnet-out
+
+# ---------------------------------------------------------------------------
+# Verification whitelists (kept compatible with the firewalld role)
+# ---------------------------------------------------------------------------
+var_fw_services_whitelist:
+  - ssh
+  - dhcpv6-client
+var_fw_ports_whitelist:
+  - 22/tcp
+var_fw_default_zone:
+  - drop
+var_fw_active_zones:
+  - trusted
+var_fw_target:
+  - DROP
+
+var_listening_ports_blacklist:
+  - "udp 0.0.0.0:2049"
+  - "tcp 0.0.0.0:445"
+  - "tcp 0.0.0.0:80"
+  - "tcp 0.0.0.0:21"
+  - "udp *:2049"
+  - "tcp *:445"
+  - "tcp *:80"
+  - "tcp *:21"
+  - "udp :::2049"
+  - "tcp :::445"
+  - "tcp :::80"
+  - "tcp :::21"
+  

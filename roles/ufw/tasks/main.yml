@@ -1,0 +1,172 @@
+- name: Install ufw and remove firewalld @service_ufw_enabled
+  ignore_errors: "{{ ansible_check_mode }}"
+  block:
+    - name: Remove firewalld @service_ufw_enabled
+      package:
+        name: firewalld
+        state: absent
+
+    - name: Remove conflicting iptables-persistent @service_ufw_enabled
+      package:
+        name:
+          - iptables-persistent
+          - netfilter-persistent
+        state: absent
+
+    - name: Install ufw @service_ufw_enabled
+      package:
+        name: ufw
+        state: present
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - service_ufw_enabled
+
+- name: Enable ufw service @service_ufw_enabled
+  ignore_errors: "{{ ansible_check_mode }}"
+  service:
+    name: ufw
+    enabled: yes
+    state: started
+  notify: Ufw restarted
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - service_ufw_enabled
+
+
+- name: Set ufw default policies @initial_ufw_rules
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.general.ufw:
+    state: enabled
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - {direction: incoming, policy: deny}
+    - {direction: outgoing, policy: "{{ var_ufw_zones[var_ufw_zone].policy_out }}"}
+    - {direction: routed,   policy: deny}
+  notify: Ufw reloaded
+  tags: [bl, ws, sec, mob, initial_ufw_rules]
+
+- name: Set ufw logging @initial_ufw_rules
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.general.ufw:
+    logging: "{{ var_ufw_logging }}"
+  notify: Ufw reloaded
+  tags: [bl, ws, sec, mob, initial_ufw_rules]
+
+
+- name: Apply outgoing CIDR filters @ufw_outgoing_rules
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.general.ufw:
+    rule:      "{{ item.action }}"
+    direction: out
+    to_ip:     "{{ item.to }}"
+    insert:    "{{ out_cidr_idx + 1 }}"
+  loop: "{{ var_ufw_outgoing | selectattr('to', 'defined') | list }}"
+  loop_control:
+    index_var: out_cidr_idx
+  tags: [bl, ws, sec, mob, ufw_outgoing_rules]
+
+- name: Apply outgoing port filters @ufw_outgoing_rules
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.general.ufw:
+    rule:      "{{ item.action }}"
+    direction: out
+    port:      "{{ item.port }}"
+    proto:     "{{ item.proto }}"
+  loop: "{{ var_ufw_outgoing | selectattr('port', 'defined') | list }}"
+  notify: Ufw reloaded
+  tags: [bl, ws, sec, mob, ufw_outgoing_rules]
+
+
+- name: Build flattened incoming rule list from active zones @ufw_zone_rules
+  set_fact:
+    ufw_active_incoming_rules: >-
+      {%- set _r = [] -%}
+      {%- for z in var_ufw_active_zones -%}
+        {%- for r in var_ufw_zones[z].rules -%}
+          {%- set _ = _r.append(r) -%}
+        {%- endfor -%}
+        {%- if z == 'work' -%}
+          {%- for r in var_ufw_work_extra_rules -%}
+            {%- set _ = _r.append(r) -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ _r }}
+  tags: [bl, ws, sec, mob, ufw_zone_rules]
+
+- name: Apply incoming rules for active zones @ufw_zone_rules
+  ignore_errors: "{{ ansible_check_mode }}"
+  community.general.ufw:
+    rule:      allow
+    direction: in
+    from_ip:   "{{ item.from | default(omit) }}"
+    port:      "{{ item.port | default(omit) }}"
+    proto:     "{{ item.proto | default(omit) }}"
+    comment:   "{{ item.comment | default(omit) }}"
+  loop: "{{ ufw_active_incoming_rules }}"
+  when: "item.when_profile | default('all') in ['all', var_profile]"
+  notify: Ufw reloaded
+  tags: [bl, ws, sec, mob, ufw_zone_rules]
+
+
+- name: Verify ufw rules @verify_ufw_rules
+  ignore_errors: "{{ ansible_check_mode }}"
+  block:
+    - name: Verify ufw status @verify_ufw_rules
+      shell: ufw status verbose
+      register: ufw_status
+      changed_when: false
+      failed_when: false
+      check_mode: no
+
+    - name: Verify ufw is active @verify_ufw_rules
+      assert:
+        that:
+          - "'Status: active' in ufw_status.stdout"
+        fail_msg: "ufw is not active"
+        quiet: yes
+      changed_when: false
+
+    - name: Verify ufw default policy @verify_ufw_rules
+      assert:
+        that:
+          - "'Default: deny (incoming)' in ufw_status.stdout"
+          - "'allow (outgoing)' in ufw_status.stdout or 'deny (outgoing)' in ufw_status.stdout"
+        fail_msg: "ufw default policies not as expected"
+        quiet: yes
+      changed_when: false
+  tags:
+    - bl
+    - ws
+    - sec
+    - verify_ufw_rules
+
+
+- name: Check listening ports @check_listening_ports
+  ignore_errors: "{{ ansible_check_mode }}"
+  block:
+    - name: Check listening ports Get @check_listening_ports
+      shell: ss -pnl | awk '{print $1,$5}'
+      failed_when: false
+      check_mode: no
+      register: result
+      changed_when: false
+
+    - name: Check listening ports Check @check_listening_ports
+      changed_when: true
+      failed_when: false
+      debug:
+        msg: "{{ item }}"
+      with_items: "{{ result.stdout_lines }}"
+      when: item in var_listening_ports_blacklist
+  tags:
+    - ws
+    - sec
+    - check_listening_ports

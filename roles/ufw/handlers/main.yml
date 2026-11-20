@@ -1,0 +1,10 @@
+- name: Ufw reloaded
+  # Cheap, idempotent — re-reads /etc/ufw rules without tearing the daemon down
+  command: ufw reload
+  changed_when: true
+
+- name: Ufw restarted
+  # Full restart — used when the package/service itself changed
+  service:
+    name: ufw
+    state: restarted
