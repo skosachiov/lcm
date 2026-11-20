@@ -3,13 +3,16 @@ var_password_max_days: 90
 var_password_max_days_mob: 500
 var_password_min_days: 1
 
-var_services_blacklist:
+var_forbidden_services:
   - vsftpd
   - telnetd
   - tightvncserver
   - squid
   - tftpd
   - apache2
+
+var_required_services:
+  - auditd
 
 var_sudoers_groups_whitelist:
   - "sudo:x:27:ansible"

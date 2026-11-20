@@ -1,4 +1,4 @@
-- name: Auditd Present deb @auditd_present
+- name: Auditd Present @auditd_present
   ignore_errors: "{{ansible_check_mode}}"
   package:
     name: "{{'auditd' if ansible_pkg_mgr == 'apt' else 'audit'}}"
@@ -45,6 +45,7 @@
         create: true
       notify: Auditd restarted
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -234,6 +235,18 @@
     - ws
     - sec
     - auditd_rules_count
+
+- name: Auditd Running and Enabled @auditd_started
+  ignore_errors: "{{ ansible_check_mode }}"
+  ansible.builtin.service:
+    name: auditd
+    state: started
+    enabled: true
+  tags:
+    - ws
+    - sec
+    - mob
+    - auditd_started    
 
 # Changes required for auditd.conf (by default it rotates files on its
 # own which is not what we're looking for):

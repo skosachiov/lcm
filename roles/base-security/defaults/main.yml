@@ -5,13 +5,16 @@ var_password_min_days: 1
 
 var_home_with_exec: false
 
-var_services_blacklist:
+var_forbidden_services:
   - vsftpd
   - telnetd
   - tightvncserver
   - squid
   - tftpd
   - apache2
+
+var_required_services:
+  - ssh
 
 var_sudoers_groups_whitelist:
   - "sudo:x:27:ansible"

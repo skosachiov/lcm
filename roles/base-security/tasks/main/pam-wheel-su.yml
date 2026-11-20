@@ -1,0 +1,13 @@
+- name: Restrict su to wheel group @su_restricted_pam_weel
+  replace:
+    path: /etc/pam.d/su
+    regexp: ^[\s]*#[\s]*auth[\s]+required[\s]+pam_wheel\.so(\s+.*)?$
+    replace: auth required pam_wheel.so use_uid
+  become: true
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - su_restricted_pam_weel
+    
