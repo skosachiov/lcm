@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<direct>
+  <rule ipv="ipv4" table="filter" chain="OUTPUT" priority="-20">-d 10.10.0.0/16 -j ACCEPT</rule>
+  <rule ipv="ipv4" table="filter" chain="OUTPUT" priority="-10">-d 10.0.0.0/8 -j REJECT</rule>
+  <rule ipv="ipv4" table="filter" chain="OUTPUT" priority="0">-p tcp --dport 21 -j DROP</rule>
+  <rule ipv="ipv4" table="filter" chain="OUTPUT" priority="0">-p tcp --dport 23 -j DROP</rule>
+</direct>

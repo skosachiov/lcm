@@ -1,11 +1,3 @@
-var_fw_services_whitelist:
-  - ssh
-  - dhcp
-var_fw_ports_whitelist:
-  - 22/tcp
-  - 88/tcp
-  - 88/udp
-  - 3389/tcp
 var_fw_default_zone:
   - drop
 var_fw_active_zones:
@@ -14,6 +6,17 @@ var_fw_active_zones:
   - work
 var_fw_target:
   - DROP
+
+var_fw_ports_whitelist:
+  - 22/tcp
+  - 88/tcp
+  - 88/udp
+  - 3389/tcp
+
+var_fw_services_whitelist:
+  - ssh
+  - dhcp
+
 var_listening_ports_blacklist:
   - "udp *:2049"
   - "tcp *:445"
@@ -27,6 +30,5 @@ var_listening_ports_blacklist:
   - "tcp :::445"
   - "tcp :::80"
   - "tcp :::21"
-var_fw_direct_rules:
-  - "firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 0 -p tcp -m tcp --dport=21 -j DROP"
-  - "firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 0 -p tcp -m tcp --dport=23 -j DROP"
+
+var_firewall_logging: "off"
