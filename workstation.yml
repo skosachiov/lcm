@@ -32,7 +32,7 @@
       tags: always
 
   roles:
-    - role: audit
+    - role: auditas
     - role: apt
     - role: ad-client
     - role: ansible-client
@@ -44,7 +44,7 @@
     - role: desktop
     - role: dlp
     - role: fapolicyd
-    - role: "{{ 'ufw' if ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int == 24 else 'firewall' }}"
+    - role: {{vat_firewall_frontend}}
     - role: flatpak
     - role: integrity-check
     - role: inventory

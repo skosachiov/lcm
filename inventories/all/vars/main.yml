@@ -57,7 +57,9 @@ var_ansible_tags: ws
 var_ansible_tags_sec: sec
 var_inotify_printer: false
 var_domain_users_group: domain\ users
-#
+
+var_firewall_frontend: firewalld
+
 var_domain_admin_group:
   - gend_admins 
 var_local_admin_group: []

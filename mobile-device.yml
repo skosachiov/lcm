@@ -47,7 +47,7 @@
     - role: desktop
     # - distribution-point
     - role: dlp
-    - role: firewall
+    - role: firewalld
     - role: flatpak
     - role: integrity-check
     - role: inventories

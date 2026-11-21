@@ -42,7 +42,7 @@
     - role: audit
     - role: base-security
     - role: dlp
-    - role: firewall
+    - role: firewalld
     - role: integrity-check
     - role: inventory
     - role: mail-client

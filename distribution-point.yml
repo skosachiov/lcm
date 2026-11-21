@@ -44,7 +44,7 @@
     - role: common
     - role: distribution-point
     - role: dlp
-    - role: firewall
+    - role: firewalld
     - role: integrity-check
     - role: inventory
     - role: print
