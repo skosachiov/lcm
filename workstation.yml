@@ -44,7 +44,7 @@
     - role: desktop
     - role: dlp
     - role: fapolicyd
-    - role: {{vat_firewall_frontend}}
+    - role: "{{var_firewall_frontend}}"
     - role: flatpak
     - role: integrity-check
     - role: inventory
