@@ -3,6 +3,7 @@
   vars:
     ufw_firewall_files: "{{ var_firewall_files_dir | default(playbook_dir ~ '/inventories/all/files/firewalld') }}"
     ufw_zone_templates: "{{ query('ansible.builtin.fileglob', ufw_firewall_files ~ '/zones/*.j2') | sort }}"
+    ufw_direct_template: "{{ ufw_firewall_files }}/direct.xml.j2"
     ufw_before_rules:
       - {family: ipv4, file: /etc/ufw/before.rules}
       - {family: ipv6, file: /etc/ufw/before6.rules}
@@ -10,13 +11,32 @@
   block:
     - name: Read the rendered zone and direct XML
       ansible.builtin.set_fact:
+        ufw_xml_documents: "{{ ufw_xml_documents | default({}) | combine({item: ufw_parsed_xml}) }}"
+      vars:
+        ufw_xml_result: >-
+          {{ lookup('ansible.builtin.template', 'read-firewall-xml.j2',
+                    template_vars={'ufw_xml': lookup('ansible.builtin.template', item),
+                                   'ufw_xml_root': 'direct' if item == ufw_direct_template else 'zone'}) }}
+        ufw_parsed_xml: "{{ ufw_xml_result if ufw_xml_result is mapping else ufw_xml_result | from_json }}"
+      loop: "{{ ufw_zone_templates + [ufw_direct_template] }}"
+      ignore_errors: false
+
+    - name: Check that the shared XML uses the supported format
+      ansible.builtin.assert:
+        that:
+          - not ufw_xml_documents[item].error
+          - item != ufw_direct_template or ufw_xml_documents[item]['values'] | list | difference(['rule']) | length == 0
+        fail_msg: "{{ item }}: {{ ufw_xml_documents[item].error or 'The direct document supports only rule elements' }}"
+        quiet: true
+      loop: "{{ ufw_zone_templates + [ufw_direct_template] }}"
+      ignore_errors: false
+
+    - name: Collect the zone definitions and direct rules
+      ansible.builtin.set_fact:
         ufw_zones: >-
           {{ dict(ufw_zone_templates | map('basename') | map('regex_replace', '(?:[.]xml)?[.]j2$', '')
-             | zip(query('ansible.builtin.template', *ufw_zone_templates)
-                   | map('ansible.utils.from_xml') | map(attribute='zone'))) }}
-        ufw_direct: >-
-          {{ (lookup('ansible.builtin.template', ufw_firewall_files ~ '/direct.xml.j2')
-              | ansible.utils.from_xml).direct.rule | default([], true) }}
+             | zip(ufw_zone_templates | map('extract', ufw_xml_documents, 'values'))) }}
+        ufw_direct: "{{ ufw_xml_documents[ufw_direct_template]['values'].rule | default([]) }}"
       ignore_errors: false
 
     - name: Validate the default zone and logging setting
@@ -53,7 +73,7 @@
         quiet: true
       vars:
         ufw_direct_pattern: '^[a-zA-Z0-9_./:=!+, -]+ -j (ACCEPT|DROP|REJECT)$'
-      loop: "{{ [ufw_direct] if ufw_direct is mapping else ufw_direct }}"
+      loop: "{{ ufw_direct }}"
       ignore_errors: false
 
     - name: Render the UFW filter rules before changing the host
