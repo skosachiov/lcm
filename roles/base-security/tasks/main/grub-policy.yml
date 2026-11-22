@@ -176,19 +176,19 @@
       ignore_errors: "{{ansible_check_mode}}"
       set_fact:
         grub_current: >-
-          {{ (grub_raw.content | default('') | b64decode
-              | regex_findall('(?m)^' ~ var_grub_cmdline_var ~ '="([^"]*)"')
+          {{ ((grub_raw.content | default('') | b64decode)
+               | regex_findall('(?m)^' ~ var_grub_cmdline_var ~ '="([^"]*)"')
               + [''])[0] }}
         grub_managed_keys: >-
-          {{ ((var_grub_kernel_args_present | map('regex_replace', '=.*$', '') | list)
-            + (var_grub_kernel_args_absent  | map('regex_replace', '=.*$', '') | list))
+          {{ ((var_grub_kernel_args_present | default([]) | map('regex_replace', '=.*$', '') | list)
+            + (var_grub_kernel_args_absent  | default([]) | map('regex_replace', '=.*$', '') | list))
             | unique | list }}
         grub_new_line: >-
           {{ ((grub_current.split()
                | reject('match',
                         '^(' ~ (grub_managed_keys | map('regex_escape') | join('|')) ~ ')(=|$)')
                | list)
-              + var_grub_kernel_args_present)
+              + (var_grub_kernel_args_present | default([])))
              | join(' ') }}
 
     - name: Apply kernel cmdline arguments @grub_kernel_args
@@ -197,13 +197,17 @@
         path: "{{ var_grub_cmdline_file }}"
         regexp: '^{{ var_grub_cmdline_var }}=".*"$'
         line: '{{ var_grub_cmdline_var }}="{{ grub_new_line }}"'
-      when: grub_current != grub_new_line
+      when:
+        - grub_current is defined
+        - grub_new_line is defined
+        - grub_current != grub_new_line
       register: grub_updated
 
     - name: Update GRUB boot config (Debian) @grub_kernel_args
       ignore_errors: "{{ansible_check_mode}}"
       command: update-grub
       when:
+        - grub_updated is defined
         - grub_updated is changed
         - ansible_os_family == 'Debian'
       changed_when: true
@@ -212,6 +216,7 @@
       ignore_errors: "{{ansible_check_mode}}"
       command: grub2-mkconfig -o /boot/grub2/grub.cfg
       when:
+        - grub_updated is defined
         - grub_updated is changed
         - ansible_os_family == 'RedHat'
       changed_when: true
@@ -219,4 +224,5 @@
     - bl
     - ws
     - sec
-    - grub_kernel_args    
+    - grub_kernel_args
+    
