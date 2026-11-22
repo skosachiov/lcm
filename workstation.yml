@@ -44,7 +44,8 @@
     - role: desktop
     - role: dlp
     - role: fapolicyd
-    - role: "{{var_firewall_frontend}}"
+    - role: firewalld
+    - role: ufw
     - role: flatpak
     - role: integrity-check
     - role: inventory
