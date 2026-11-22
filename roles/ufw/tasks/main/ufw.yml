@@ -146,7 +146,7 @@
         marker: "# {mark} LCM SHARED FIREWALL RULES"
         block: "{{ ufw_filters[item.family] }}"
       loop: "{{ ufw_before_rules }}"
-      notify: UFW reloaded
+      notify: Ufw reloaded
 
     - name: Check for the old UFW masquerade helper
       ansible.builtin.stat:
@@ -162,14 +162,14 @@
         path: /etc/ufw/after.init
         marker: '# {mark} LCM POLICY MASQUERADE'
         state: absent
-      notify: UFW reloaded
+      notify: Ufw reloaded
 
     - name: Remove the old managed forwarding settings
       ansible.builtin.blockinfile:
         path: /etc/ufw/sysctl.conf
         marker: '# {mark} LCM POLICY FORWARDING'
         state: absent
-      notify: UFW reloaded
+      notify: Ufw reloaded
 
     - name: Remove the old masquerade helper
       ansible.builtin.file:

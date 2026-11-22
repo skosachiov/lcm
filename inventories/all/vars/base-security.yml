@@ -2,6 +2,9 @@ var_password_minlen: 8
 var_password_max_days: 90
 var_password_max_days_mob: 500
 var_password_min_days: 1
+var_password_warn_age: 14
+
+var_empty_password_exceptions: []
 
 var_forbidden_services:
   - vsftpd
