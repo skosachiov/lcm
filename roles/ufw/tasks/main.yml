@@ -1,153 +1,196 @@
-- name: Install ufw and remove firewalld @service_ufw_enabled
+- name: Install and configure UFW from the shared firewall definitions
   ignore_errors: "{{ ansible_check_mode }}"
+  vars:
+    ufw_firewall_files: "{{ var_firewall_files_dir | default(playbook_dir ~ '/inventories/all/files/firewalld') }}"
+    ufw_zone_templates: "{{ query('ansible.builtin.fileglob', ufw_firewall_files ~ '/zones/*.j2') | sort }}"
+    ufw_before_rules:
+      - {family: ipv4, file: /etc/ufw/before.rules}
+      - {family: ipv6, file: /etc/ufw/before6.rules}
+    ufw_commit_comment: "(?im)^# don't delete the 'COMMIT' line"
   block:
-    - name: Remove firewalld @service_ufw_enabled
-      package:
+    - name: Read the rendered zone and direct XML
+      ansible.builtin.set_fact:
+        ufw_zones: >-
+          {{ dict(ufw_zone_templates | map('basename') | map('regex_replace', '(?:[.]xml)?[.]j2$', '')
+             | zip(query('ansible.builtin.template', *ufw_zone_templates)
+                   | map('ansible.utils.from_xml') | map(attribute='zone'))) }}
+        ufw_direct: >-
+          {{ (lookup('ansible.builtin.template', ufw_firewall_files ~ '/direct.xml.j2')
+              | ansible.utils.from_xml).direct.rule | default([], true) }}
+      ignore_errors: false
+
+    - name: Validate the default zone and logging setting
+      ansible.builtin.assert:
+        that:
+          - var_fw_default_zone | length == 1
+          - var_fw_default_zone | first in ufw_zones
+          - var_firewall_logging in ['off', 'all', 'unicast', 'broadcast', 'multicast']
+        quiet: true
+      ignore_errors: false
+
+    - name: Validate the supported zone elements
+      ansible.builtin.assert:
+        that:
+          - (item.value | default({}, true) | list | difference(ufw_zone_keys)) | length == 0
+          - (item.value | default({}, true)).get('@target', 'default') in ['default', 'DROP', 'REJECT', 'ACCEPT']
+        fail_msg: "UFW cannot translate zone {{ item.key }}"
+        quiet: true
+      vars:
+        ufw_zone_keys: ['@target', '@version', '@ingress-priority', '@egress-priority', short, description, source, interface, port, service]
+      loop: "{{ ufw_zones | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      ignore_errors: false
+
+    - name: Validate direct OUTPUT rules
+      ansible.builtin.assert:
+        that:
+          - item['@ipv'] in ['ipv4', 'ipv6']
+          - item['@table'] == 'filter' and item['@chain'] == 'OUTPUT'
+          - item['@priority'] is match('^-?[0-9]+$')
+          - item['#text'] is match(ufw_direct_pattern)
+        fail_msg: "UFW requires a direct filter OUTPUT rule ending in ACCEPT, DROP or REJECT"
+        quiet: true
+      vars:
+        ufw_direct_pattern: '^[a-zA-Z0-9_./:=!+, -]+ -j (ACCEPT|DROP|REJECT)$'
+      loop: "{{ [ufw_direct] if ufw_direct is mapping else ufw_direct }}"
+      ignore_errors: false
+
+    - name: Render the UFW filter rules before changing the host
+      ansible.builtin.set_fact:
+        ufw_filters: >-
+          {{ ufw_filters | default({}) | combine({item.family:
+             lookup('ansible.builtin.template', 'shared-filter.rules.j2',
+                    template_vars={'ufw_family': item.family})}) }}
+      loop: "{{ ufw_before_rules }}"
+      ignore_errors: false
+
+    - name: Remove packages that conflict with UFW on Debian-based hosts
+      ansible.builtin.apt:
+        name: [iptables-persistent, netfilter-persistent]
+        state: absent
+      when: ansible_os_family == 'Debian'
+
+    - name: Install UFW without starting the Debian service
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+        policy_rc_d: 101
+      when: ansible_os_family == 'Debian'
+
+    - name: Install UFW on other hosts
+      ansible.builtin.package:
+        name: ufw
+        state: present
+      when: ansible_os_family != 'Debian'
+
+    - name: Read the UFW before-rules files
+      ansible.builtin.slurp:
+        src: "{{ item.file }}"
+      loop: "{{ ufw_before_rules }}"
+      register: ufw_before_files
+
+    - name: Locate the filter table insertion point
+      ansible.builtin.assert:
+        that:
+          - item.content | b64decode is search(ufw_commit_comment)
+        fail_msg: "{{ item.source }} is missing the UFW filter table's COMMIT comment"
+        quiet: true
+      loop: "{{ ufw_before_files.results }}"
+      loop_control:
+        label: "{{ item.item.file }}"
+      when: item.content is defined
+
+    - name: Install the translated IPv4 and IPv6 filter rules
+      ansible.builtin.blockinfile:
+        path: "{{ item.file }}"
+        insertbefore: "{{ ufw_commit_comment }}"
+        marker: "# {mark} LCM SHARED FIREWALL RULES"
+        block: "{{ ufw_filters[item.family] }}"
+      loop: "{{ ufw_before_rules }}"
+      notify: UFW reloaded
+
+    - name: Check for the old UFW masquerade helper
+      ansible.builtin.stat:
+        path: /etc/ufw/lcm-policy-nat
+      register: ufw_legacy_nat
+
+    - name: Stop masquerading managed by the previous UFW role
+      ansible.builtin.command: /etc/ufw/lcm-policy-nat stop
+      when: ufw_legacy_nat.stat.exists
+
+    - name: Remove the old managed masquerade hook
+      ansible.builtin.blockinfile:
+        path: /etc/ufw/after.init
+        marker: '# {mark} LCM POLICY MASQUERADE'
+        state: absent
+      notify: UFW reloaded
+
+    - name: Remove the old managed forwarding settings
+      ansible.builtin.blockinfile:
+        path: /etc/ufw/sysctl.conf
+        marker: '# {mark} LCM POLICY FORWARDING'
+        state: absent
+      notify: UFW reloaded
+
+    - name: Remove the old masquerade helper
+      ansible.builtin.file:
+        path: /etc/ufw/lcm-policy-nat
+        state: absent
+
+    - name: Remove firewalld before activating UFW
+      ansible.builtin.package:
         name: firewalld
         state: absent
 
-    - name: Remove conflicting iptables-persistent @service_ufw_enabled
-      package:
-        name:
-          - iptables-persistent
-          - netfilter-persistent
-        state: absent
+    - name: Set UFW default policies
+      community.general.ufw:
+        direction: "{{ item.direction }}"
+        policy: "{{ item.policy }}"
+      loop:
+        - {direction: incoming, policy: deny}
+        - {direction: outgoing, policy: allow}
+        - {direction: routed, policy: deny}
 
-    - name: Install ufw @service_ufw_enabled
-      package:
+    - name: Set UFW logging
+      community.general.ufw:
+        logging: "{{ 'off' if var_firewall_logging == 'off' else 'low' }}"
+
+    - name: Enable the configured UFW firewall
+      community.general.ufw:
+        state: enabled
+
+    - name: Enable the UFW system service
+      ansible.builtin.service:
         name: ufw
-        state: present
-  tags:
-    - bl
-    - ws
-    - sec
-    - mob
-    - service_ufw_enabled
+        enabled: true
+        state: started
 
-- name: Enable ufw service @service_ufw_enabled
-  ignore_errors: "{{ ansible_check_mode }}"
-  service:
-    name: ufw
-    enabled: yes
-    state: started
-  notify: Ufw restarted
-  tags:
-    - bl
-    - ws
-    - sec
-    - mob
-    - service_ufw_enabled
+    - name: Apply pending UFW changes before verification
+      ansible.builtin.meta: flush_handlers
+  tags: [bl, ws, sec, mob, service_ufw_enabled, initial_ufw_rules, ufw_outgoing_rules, ufw_zone_rules]
 
-
-- name: Set ufw default policies @initial_ufw_rules
-  ignore_errors: "{{ ansible_check_mode }}"
-  community.general.ufw:
-    state: enabled
-    direction: "{{ item.direction }}"
-    policy: "{{ item.policy }}"
-  loop:
-    - {direction: incoming, policy: deny}
-    - {direction: outgoing, policy: "{{ var_ufw_zones[var_ufw_zone].policy_out }}"}
-    - {direction: routed,   policy: deny}
-  notify: Ufw reloaded
-  tags: [bl, ws, sec, mob, initial_ufw_rules]
-
-- name: Set ufw logging @initial_ufw_rules
-  ignore_errors: "{{ ansible_check_mode }}"
-  community.general.ufw:
-    logging: "{{ var_ufw_logging }}"
-  notify: Ufw reloaded
-  tags: [bl, ws, sec, mob, initial_ufw_rules]
-
-
-- name: Apply outgoing CIDR filters @ufw_outgoing_rules
-  ignore_errors: "{{ ansible_check_mode }}"
-  community.general.ufw:
-    rule:      "{{ item.action }}"
-    direction: out
-    to_ip:     "{{ item.to }}"
-    insert:    "{{ out_cidr_idx + 1 }}"
-  loop: "{{ var_ufw_outgoing | selectattr('to', 'defined') | list }}"
-  loop_control:
-    index_var: out_cidr_idx
-  tags: [bl, ws, sec, mob, ufw_outgoing_rules]
-
-- name: Apply outgoing port filters @ufw_outgoing_rules
-  ignore_errors: "{{ ansible_check_mode }}"
-  community.general.ufw:
-    rule:      "{{ item.action }}"
-    direction: out
-    port:      "{{ item.port }}"
-    proto:     "{{ item.proto }}"
-  loop: "{{ var_ufw_outgoing | selectattr('port', 'defined') | list }}"
-  notify: Ufw reloaded
-  tags: [bl, ws, sec, mob, ufw_outgoing_rules]
-
-
-- name: Build flattened incoming rule list from active zones @ufw_zone_rules
-  set_fact:
-    ufw_active_incoming_rules: >-
-      {%- set _r = [] -%}
-      {%- for z in var_ufw_active_zones -%}
-        {%- for r in var_ufw_zones[z].rules -%}
-          {%- set _ = _r.append(r) -%}
-        {%- endfor -%}
-        {%- if z == 'work' -%}
-          {%- for r in var_ufw_work_extra_rules -%}
-            {%- set _ = _r.append(r) -%}
-          {%- endfor -%}
-        {%- endif -%}
-      {%- endfor -%}
-      {{ _r }}
-  tags: [bl, ws, sec, mob, ufw_zone_rules]
-
-- name: Apply incoming rules for active zones @ufw_zone_rules
-  ignore_errors: "{{ ansible_check_mode }}"
-  community.general.ufw:
-    rule:      allow
-    direction: in
-    from_ip:   "{{ item.from | default(omit) }}"
-    port:      "{{ item.port | default(omit) }}"
-    proto:     "{{ item.proto | default(omit) }}"
-    comment:   "{{ item.comment | default(omit) }}"
-  loop: "{{ ufw_active_incoming_rules }}"
-  when: "item.when_profile | default('all') in ['all', var_profile]"
-  notify: Ufw reloaded
-  tags: [bl, ws, sec, mob, ufw_zone_rules]
-
-
-- name: Verify ufw rules @verify_ufw_rules
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Verify UFW rules @verify_ufw_rules
+  when: not ansible_check_mode
   block:
-    - name: Verify ufw status @verify_ufw_rules
-      shell: ufw status verbose
+    - name: Read the running UFW configuration
+      ansible.builtin.command: ufw status verbose
+      environment:
+        LC_ALL: C
       register: ufw_status
       changed_when: false
-      failed_when: false
-      check_mode: no
 
-    - name: Verify ufw is active @verify_ufw_rules
-      assert:
+    - name: Verify UFW is active with the expected default policies
+      ansible.builtin.assert:
         that:
           - "'Status: active' in ufw_status.stdout"
-        fail_msg: "ufw is not active"
-        quiet: yes
-      changed_when: false
+          - "'Default: deny (incoming), allow (outgoing), deny (routed)' in ufw_status.stdout"
+        quiet: true
 
-    - name: Verify ufw default policy @verify_ufw_rules
-      assert:
-        that:
-          - "'Default: deny (incoming)' in ufw_status.stdout"
-          - "'allow (outgoing)' in ufw_status.stdout or 'deny (outgoing)' in ufw_status.stdout"
-        fail_msg: "ufw default policies not as expected"
-        quiet: yes
+    - name: Verify the shared forwarding filter is loaded
+      ansible.builtin.command: iptables -C ufw-before-forward -j DROP
       changed_when: false
-  tags:
-    - bl
-    - ws
-    - sec
-    - verify_ufw_rules
-
+  tags: [bl, ws, sec, verify_ufw_rules]
 
 - name: Check listening ports @check_listening_ports
   ignore_errors: "{{ ansible_check_mode }}"
