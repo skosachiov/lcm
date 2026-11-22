@@ -32,7 +32,7 @@
       tags: always
 
   roles:
-    - role: auditas
+    - role: audit
     - role: apt
     - role: ad-client
     - role: ansible-client
