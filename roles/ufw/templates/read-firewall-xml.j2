@@ -1,0 +1,31 @@
+{# Read the flat XML elements supported by the UFW translator. #}
+{% set xml = ufw_xml | regex_replace('(?s)<!--.*?-->', '') | regex_replace('(?s)^\\s*<\\?xml\\s.*?\\?>', '') | trim %}
+{% set root_pattern = '(?s)^<' ~ ufw_xml_root ~ '\\b([^>]*?)(?:/\\s*>|>(.*?)</' ~ ufw_xml_root ~ '\\s*>)$' %}
+{% set element_pattern = '(?s)<([a-z][a-z0-9-]*)\\b([^>]*?)(?:/\\s*>|>([^<]*)</\\1\\s*>)' %}
+{% set attribute_pattern = "([a-z][a-z0-9-]*)\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')" %}
+{% macro attributes(text) -%}
+{% set attrs = namespace(values={}) %}
+{% for key, double, single in text | regex_findall(attribute_pattern) %}
+{% set attrs.values = attrs.values | combine({'@' ~ key: double or single}) %}
+{% endfor %}
+{{ attrs.values | to_json }}
+{%- endmacro %}
+{% set roots = xml | regex_findall(root_pattern) %}
+{% set parsed = namespace(values={}, error='') %}
+{% if not roots %}
+{% set parsed.error = 'Expected a <' ~ ufw_xml_root ~ '> document' %}
+{% else %}
+{% set root_attrs, body = roots | first %}
+{% set parsed.values = attributes(root_attrs) | from_json %}
+{% if root_attrs | regex_replace(attribute_pattern, '') | trim or body | regex_replace(element_pattern, '') | trim %}
+{% set parsed.error = 'Expected flat XML elements and quoted attributes' %}
+{% endif %}
+{% for tag, attrs, text in body | regex_findall(element_pattern) %}
+{% if attrs | regex_replace(attribute_pattern, '') | trim %}
+{% set parsed.error = 'Invalid attributes on <' ~ tag ~ '>' %}
+{% endif %}
+{% set entry = attributes(attrs) | from_json | combine({'#text': text | trim}) %}
+{% set parsed.values = parsed.values | combine({tag: parsed.values.get(tag, []) + [entry]}) %}
+{% endfor %}
+{% endif %}
+{{ {'values': parsed.values, 'error': parsed.error} | to_json }}

@@ -14,7 +14,7 @@
         ufw_xml_documents: "{{ ufw_xml_documents | default({}) | combine({item: ufw_parsed_xml}) }}"
       vars:
         ufw_xml_result: >-
-          {{ lookup('ansible.builtin.template', 'read-firewall-xml.j2',
+          {{ lookup('ansible.builtin.template', role_path ~ '/templates/read-firewall-xml.j2',
                     template_vars={'ufw_xml': lookup('ansible.builtin.template', item),
                                    'ufw_xml_root': 'direct' if item == ufw_direct_template else 'zone'}) }}
         ufw_parsed_xml: "{{ ufw_xml_result if ufw_xml_result is mapping else ufw_xml_result | from_json }}"
@@ -80,7 +80,7 @@
       ansible.builtin.set_fact:
         ufw_filters: >-
           {{ ufw_filters | default({}) | combine({item.family:
-             lookup('ansible.builtin.template', 'shared-filter.rules.j2',
+             lookup('ansible.builtin.template', role_path ~ '/templates/shared-filter.rules.j2',
                     template_vars={'ufw_family': item.family})}) }}
       loop: "{{ ufw_before_rules }}"
       ignore_errors: false

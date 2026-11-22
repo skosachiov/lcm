@@ -21,18 +21,18 @@
 {% set services = zone.service | default([], true) %}
 {% set target = zone.get('@target', 'default') %}
 {% set allowed = namespace(ports=[]) %}
-{% for source in ([sources] if sources is mapping else sources) %}
+{% for source in sources %}
 {% if (':' in source['@address']) == (ufw_family == 'ipv6') %}
 {% set rules.sources = rules.sources + [{'priority': priority, 'line': '-s ' ~ source['@address'] ~ ' -g ' ~ chain}] %}
 {% endif %}
 {% endfor %}
-{% for interface in ([interfaces] if interfaces is mapping else interfaces) %}
+{% for interface in interfaces %}
 {% set rules.interfaces = rules.interfaces + [{'priority': priority, 'line': '-i ' ~ interface['@name'] ~ ' -g ' ~ chain}] %}
 {% endfor %}
-{% for port in ([ports] if ports is mapping else ports) %}
+{% for port in ports %}
 {% set allowed.ports = allowed.ports + [port['@port'] ~ '/' ~ port['@protocol']] %}
 {% endfor %}
-{% for service in ([services] if services is mapping else services) %}
+{% for service in services %}
 {% set allowed.ports = allowed.ports + (var_firewall_service_ports[service['@name']] | mandatory) %}
 {% endfor %}
 {% set rules.zones = rules.zones + [{'chain': chain, 'ports': allowed.ports | unique | list,
@@ -56,7 +56,7 @@
 {% endfor %}
 -A {{ input_chain }} -g {{ rules.default_chain }}
 {{ verdict(forward_chain, 'DROP') | trim }}
-{% for rule in ([ufw_direct] if ufw_direct is mapping else ufw_direct) if rule['@ipv'] == ufw_family %}
+{% for rule in ufw_direct if rule['@ipv'] == ufw_family %}
 {% set rules.direct = rules.direct + [{'priority': rule['@priority'] | int, 'arguments': rule['#text']}] %}
 {% endfor %}
 {# Insertion at position 1 reverses the sequence. #}
@@ -64,3 +64,4 @@
 -I {{ output_chain }} 1 {{ rule.arguments }}
 {% endfor %}
 -A {{ output_chain }} -j ACCEPT
+    

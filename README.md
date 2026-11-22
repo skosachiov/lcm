@@ -345,7 +345,11 @@ The ansible-controlled version of fapolicyd is an analogue of Applocker on the W
 
 ## firewall
 
-The firewall role replaces the uncomplicated ufw with the more advanced firewalld, defines multiple zones based on outgoing ip addresses. In addition, the role performs various checks, for example, for suspicious open ports. Configuring the netfilter-persistent package makes it possible to override the default ACCEPT mode for INPUT chains.
+The firewalld and ufw roles share firewall configuration from inventories/all/files/firewalld/ and settings from inventories/all/vars/firewall.yml. Zones match incoming traffic by source address or interface. Direct rules control outbound traffic in priority order.
+
+The firewalld role loads zones, policies, service definitions, and direct rules. The ufw role uses Jinja2 to translate zones and direct outbound rules into persistent IPv4 and IPv6 rules. Routed policies and masquerading are available with firewalld.
+
+Both roles verify the active firewall and report listening ports that match the inventory blacklist. On Debian-based hosts, they remove conflicting iptables-persistent and netfilter-persistent packages.
 
 ## flatpak
 
