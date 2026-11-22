@@ -162,3 +162,61 @@
     - sec
     - mob
     - grub_password_outdated
+
+- name: Ensure kernel cmdline arguments @grub_kernel_args
+  block:
+    - name: Read GRUB config @grub_kernel_args
+      ignore_errors: "{{ansible_check_mode}}"
+      slurp:
+        src: "{{ var_grub_cmdline_file }}"
+      register: grub_raw
+      failed_when: false
+
+    - name: Compute current, managed keys and desired cmdline @grub_kernel_args
+      ignore_errors: "{{ansible_check_mode}}"
+      set_fact:
+        grub_current: >-
+          {{ (grub_raw.content | default('') | b64decode
+              | regex_findall('(?m)^' ~ var_grub_cmdline_var ~ '="([^"]*)"')
+              + [''])[0] }}
+        grub_managed_keys: >-
+          {{ ((var_grub_kernel_args_present | map('regex_replace', '=.*$', '') | list)
+            + (var_grub_kernel_args_absent  | map('regex_replace', '=.*$', '') | list))
+            | unique | list }}
+        grub_new_line: >-
+          {{ ((grub_current.split()
+               | reject('match',
+                        '^(' ~ (grub_managed_keys | map('regex_escape') | join('|')) ~ ')(=|$)')
+               | list)
+              + var_grub_kernel_args_present)
+             | join(' ') }}
+
+    - name: Apply kernel cmdline arguments @grub_kernel_args
+      ignore_errors: "{{ansible_check_mode}}"
+      lineinfile:
+        path: "{{ var_grub_cmdline_file }}"
+        regexp: '^{{ var_grub_cmdline_var }}=".*"$'
+        line: '{{ var_grub_cmdline_var }}="{{ grub_new_line }}"'
+      when: grub_current != grub_new_line
+      register: grub_updated
+
+    - name: Update GRUB boot config (Debian) @grub_kernel_args
+      ignore_errors: "{{ansible_check_mode}}"
+      command: update-grub
+      when:
+        - grub_updated is changed
+        - ansible_os_family == 'Debian'
+      changed_when: true
+
+    - name: Update GRUB boot config (RedHat) @grub_kernel_args
+      ignore_errors: "{{ansible_check_mode}}"
+      command: grub2-mkconfig -o /boot/grub2/grub.cfg
+      when:
+        - grub_updated is changed
+        - ansible_os_family == 'RedHat'
+      changed_when: true
+  tags:
+    - bl
+    - ws
+    - sec
+    - grub_kernel_args    

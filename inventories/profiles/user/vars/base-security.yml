@@ -25,3 +25,18 @@ var_sysctl_hardening:
   net.ipv4.conf.default.secure_redirects: '0'      
   net.ipv4.conf.all.proxy_arp_pvlan: '0'           
   net.ipv4.conf.default.proxy_arp_pvlan: '0'       
+
+var_grub_cmdline_file: /etc/default/grub
+var_grub_cmdline_var: GRUB_CMDLINE_LINUX
+var_grub_kernel_args_present:
+  - init_on_alloc=1
+  - slab_nomerge
+  - iommu=force
+  - iommu.strict=1
+  - iommu.passthrough=0
+  - randomize_kstack_offset=1
+  - mitigations=auto
+  - vsyscall=none
+  - debugfs=off
+  - tsx=off
+  - ipv6.disable=1  
