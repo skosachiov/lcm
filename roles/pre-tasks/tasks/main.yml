@@ -299,9 +299,12 @@
 
 - name: Include ou vars @default
   block:
-    - name: Include ou vars Try @default
+    - name: Include ou vars @default
       include_vars:
-        file: "{{playbook_dir}}/inventories/ou/{{var_ou_guid}}/vars/main.yml"
+        file: "{{ item }}"
+      loop: "{{ query('fileglob', playbook_dir ~ '/inventories/ou/' ~ var_ou_guid ~ '/vars/*.yml') | sort }}"
+      loop_control:
+        label: "{{ item | basename }}"
   rescue:
     - name: Include ou vars Failed @default
       debug:
@@ -311,40 +314,54 @@
 
 - name: Include distribution vars @default
   include_vars:
-    file: "{{playbook_dir}}/inventories/distribution/{{ansible_distribution}}/{{ansible_distribution_major_version}}/vars/main.yml"
+    file: "{{ item }}"
+  loop: "{{ query('fileglob', playbook_dir ~ '/inventories/distribution/' ~ ansible_distribution ~ '/' ~ ansible_distribution_major_version ~ '/vars/*.yml') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
   tags: always
 
 - name: Include branch vars @default
-  failed_when: false
   include_vars:
-    file: "{{playbook_dir}}/inventories/branches/{{var_company|lower}}/vars/main.yml"
+    file: "{{ item }}"
+  loop: "{{ query('fileglob', playbook_dir ~ '/inventories/branches/' ~ (var_company | lower) ~ '/vars/*.yml') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
   when: var_company | default('') | length > 0
   tags: always
 
 - name: Include subnet vars @default
   include_vars:
-    file: "{{playbook_dir}}/inventories/subnets/{{var_subnet}}/vars/main.yml"
+    file: "{{ item }}"
+  loop: "{{ query('fileglob', playbook_dir ~ '/inventories/subnets/' ~ var_subnet ~ '/vars/*.yml') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
   when: var_subnet | default('') | length > 0
   tags: always
 
 - name: Include domain vars @default
   include_vars:
-    file: "{{playbook_dir}}/inventories/domains/{{var_local_domain|lower}}/vars/main.yml"
-  failed_when: false
+    file: "{{ item }}"
+  loop: "{{ query('fileglob', playbook_dir ~ '/inventories/domains/' ~ (var_local_domain | lower) ~ '/vars/*.yml') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
   when: var_local_domain | default('') | length > 0
   tags: always
 
 - name: Include env vars @default
   include_vars:
-    file: "{{playbook_dir}}/inventories/env/{{var_env}}/vars/main.yml"
-  failed_when: false
+    file: "{{ item }}"
+  loop: "{{ query('fileglob', playbook_dir ~ '/inventories/env/' ~ var_env ~ '/vars/*.yml') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
   when: var_env | default('') | length > 0
   tags: always
 
 - name: Include device vars @default
   include_vars:
-    file: "{{playbook_dir}}/inventories/devices/{{var_device}}/vars/main.yml"
-  failed_when: false
+    file: "{{ item }}"
+  loop: "{{ query('fileglob', playbook_dir ~ '/inventories/devices/' ~ var_device ~ '/vars/*.yml') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
   when: var_device | default('') | length > 0
   tags: always
 

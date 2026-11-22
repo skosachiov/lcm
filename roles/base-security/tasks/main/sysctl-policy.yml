@@ -1,209 +1,61 @@
-- name: Ensure sysctl kernel.dmesg_restrict is set to 1 @sysctl_kernel_dmesg_restrict
+- name: Ensure sysctl hardening is set @sysctl_hardening
   ignore_errors: "{{ansible_check_mode}}"
   sysctl:
-    name: kernel.dmesg_restrict
-    value: '1'
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
     state: present
     reload: true
     ignoreerrors: true
+    sysctl_file: "{{ var_sysctl_file }}"
+  loop: "{{ var_sysctl_hardening | dict2items }}"
+  loop_control:
+    label: "{{ item.key }} = {{ item.value }}"
   tags:
     - bl
     - ws
     - sec
     - mob
-    - sysctl_kernel_dmesg_restrict
+    - sysctl_hardening
 
-- name: Ensure sysctl fs.suid_dumpable is set to 0 @sysctl_fs_suid_dumpable
+- name: Read currently managed sysctl file @sysctl_hardening_cleanup_slurp
+  ignore_errors: "{{ansible_check_mode}}"
+  slurp:
+    src: "{{ var_sysctl_file }}"
+  register: var_sysctl_file_raw
+  failed_when: false
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob  
+    - sysctl_hardening_cleanup_slurp
+
+- name: Compute stale sysctl entries @sysctl_hardening_cleanup_set
+  ignore_errors: "{{ansible_check_mode}}"
+  set_fact:
+    var_sysctl_stale: >-
+      {{ ((var_sysctl_file_raw.content | default('') | b64decode)
+           | regex_findall('(?m)^\s*([A-Za-z0-9_.\-]+)\s*=')
+           | map('trim') | unique | list)
+         | difference(var_sysctl_hardening.keys() | list) }}
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob  
+    - sysctl_hardening_cleanup_set
+
+- name: Remove sysctl entries no longer in the list @sysctl_hardening_cleanup
   ignore_errors: "{{ansible_check_mode}}"
   sysctl:
-    name: fs.suid_dumpable
-    value: '0'
-    state: present
+    name: "{{ item }}"
+    state: absent
     reload: true
-    ignoreerrors: true
+    sysctl_file: "{{ var_sysctl_file }}"
+  loop: "{{ var_sysctl_stale }}"
   tags:
     - bl
     - ws
     - sec
-    - sysctl_fs_suid_dumpable
-
-- name: Ensure sysctl kernel.randomize_va_space is set to 2 @sysctl_kernel_randomize_va_space
-  ignore_errors: "{{ansible_check_mode}}"
-  sysctl:
-    name: kernel.randomize_va_space
-    value: '2'
-    state: present
-    reload: true
-    ignoreerrors: true
-  tags:
-    - bl
-    - ws
-    - sec
-    - sysctl_kernel_randomize_va_space
-
-- name: Ensure sysctl accept_source_route is set @sysctl_accept_source_route_0
-  ignore_errors: "{{ansible_check_mode}}"
-  block:
-    - name: Ensure sysctl net.ipv4.conf.all.accept_source_route @sysctl_accept_source_route_0
-      sysctl:
-        name: net.ipv4.conf.all.accept_source_route
-        value: 0
-        state: present
-        reload: true
-        ignoreerrors: true
-    - name: Ensure sysctl net.ipv4.conf.default.accept_source_route @sysctl_accept_source_route_0
-      sysctl:
-        name: net.ipv4.conf.default.accept_source_route
-        value: 0
-        state: present
-        reload: true
-        ignoreerrors: true
-    - name: Ensure sysctl net.ipv6.conf.all.accept_source_route @sysctl_accept_source_route_0
-      sysctl:
-        name: net.ipv6.conf.all.accept_source_route
-        value: 0
-        state: present
-        reload: true
-        ignoreerrors: true
-    - name: Ensure sysctl net.ipv6.conf.default.accept_source_route @sysctl_accept_source_route_0
-      sysctl:
-        name: net.ipv6.conf.default.accept_source_route
-        value: 0
-        state: present
-        reload: true
-        ignoreerrors: true
-  tags:
-    - bl
-    - ws
-    - sec
-    - sysctl_accept_source_route_0
-
-- name: Ensure sysctl net.ipv4.icmp_echo_ignore_broadcasts is set @sysctl_net_ipv4_icmp_echo_ignore_broadcasts
-  ignore_errors: "{{ansible_check_mode}}"
-  sysctl:
-    name: net.ipv4.icmp_echo_ignore_broadcasts
-    value: 1
-    state: present
-    reload: true
-    ignoreerrors: true
-  tags:
-    - bl
-    - ws
-    - sec
-    - sysctl_net_ipv4_icmp_echo_ignore_broadcasts
-
-- name: Ensure sysctl net.ipv4.icmp_ignore_bogus_error_responses is set @sysctl_net_ipv4_icmp_ignore_bogus_error_responses
-  ignore_errors: "{{ansible_check_mode}}"
-  sysctl:
-    name: net.ipv4.icmp_ignore_bogus_error_responses
-    value: 1
-    state: present
-    reload: true
-    ignoreerrors: true
-  tags:
-    - bl
-    - ws
-    - sec
-    - sysctl_net_ipv4_icmp_ignore_bogus_error_responses
-
-- name: Ensure sysctl net.ipv4.conf.all.rp_filter is set @sysctl_net_ipv4_conf_all_rp_filter
-  ignore_errors: "{{ansible_check_mode}}"
-  sysctl:
-    name: net.ipv4.conf.all.rp_filter
-    value: 1
-    state: present
-    reload: true
-    ignoreerrors: true
-  tags:
-    - bl
-    - ws
-    - sec
-    - sysctl_net_ipv4_conf_all_rp_filter
-
-- name: Ensure sysctl net.ipv4.tcp_syncookies is set @sysctl_net_ipv4_tcp_syncookies
-  ignore_errors: "{{ansible_check_mode}}"
-  sysctl:
-    name: net.ipv4.tcp_syncookies
-    value: 1
-    state: present
-    reload: true
-    ignoreerrors: true
-  tags:
-    - bl
-    - ws
-    - sec
-    - sysctl_net_ipv4_tcp_syncookies
-
-- name: Ensure sysctl net ip forward is set to 0 @sysctl_disable_net_forward
-  ignore_errors: "{{ansible_check_mode}}"
-  block:
-    - name: Ensure sysctl net ip forward is set to 0 ipv4 @sysctl_disable_net_forward
-      sysctl:
-        name: net.ipv4.ip_forward
-        value: "{{'1' if var_profile == 'developer' else '0'}}"
-        state: present
-        reload: true
-        ignoreerrors: true
-    - name: Ensure sysctl net ip forward is set to 0 ipv6 @sysctl_disable_net_forward
-      sysctl:
-        name: net.ipv6.conf.all.forwarding
-        value: '0'
-        state: present
-        reload: true
-        ignoreerrors: true
-  tags:
-    - bl
-    - ws
-    - sec
-    - mob
-    - sysctl_disable_net_forward
-
-- name: Logging martian packets @logging_martian_packets
-  ignore_errors: "{{ansible_check_mode}}"
-  block:
-    - name: Logging martian packets All @logging_martian_packets
-      sysctl:
-        name: net.ipv4.conf.all.log_martians
-        value: '1'
-        reload: true
-        ignoreerrors: true
-    - name: Logging martian packets Default @logging_martian_packets
-      sysctl:
-        name: net.ipv4.conf.default.log_martians
-        value: '1'
-        reload: true
-        ignoreerrors: true
-  tags:
-    - ws
-    - sec
-    - logging_martian_packets
-
-- name: Ensure sysctl hardened @sysctl_hardened
-  ignore_errors: "{{ansible_check_mode}}"
-  sysctl:
-    name: "{{item.0}}"
-    value: "{{item.1}}"
-    state: present
-    reload: true
-    ignoreerrors: true
-  when:
-    - var_profile == "developer"
-  loop:
-    - ['kernel.kptr_restrict', '2']
-    - ['net.core.bpf_jit_harden', '2']
-    - ['kernel.perf_event_paranoid', '3']
-    - ['kernel.kexec_load_disabled', '1']
-    - ['kernel.unprivileged_bpf_disabled', '1']
-    - ['vm.unprivileged_userfaultfd', '0']
-    - ['dev.tty.ldisc_autoload', '0']
-    - ['vm.mmap_min_addr', '4096']
-    - ['fs.protected_symlinks', '1']
-    - ['fs.protected_hardlinks', '1']
-    - ['fs.protected_fifos', '2']
-    - ['fs.protected_regular', '2']
-    - ['kernel.yama.ptrace_scope', '1']
-  tags:
-    - bl
-    - ws
-    - sec
-    - sysctl_hardened
+    - mob  
+    - sysctl_hardening_cleanup

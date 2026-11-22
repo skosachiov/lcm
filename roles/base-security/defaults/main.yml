@@ -54,3 +54,22 @@ var_sudo_logfile: "/var/log/sudo.log"
 
 var_superusers: root
 var_password_pbkdf2: grub.pbkdf2.sha512.10000.E3F286A301E64EB0234413E469860C9C4689184EDEB1116458D402A2709980F0BC1CAC8127217B5B5B94DD1E429F2FBC93220CE0460359116D08FE0E7387EB99.EF0E53D35560388021726E5F579ACA8F9AFF2C5AE2ACA06965042DCB86612F628D459016E9D3EFF0CEC9DEC0424A3FC2095E759BC9349BD3F02301E3D96FAF4D
+
+var_sysctl_file: /etc/sysctl.di/99-hardening.conf
+
+var_sysctl_hardening:
+  kernel.dmesg_restrict: '1'
+  fs.suid_dumpable: '0'
+  kernel.randomize_va_space: '2'
+  net.ipv4.conf.all.accept_source_route: '0'
+  net.ipv4.conf.default.accept_source_route: '0'
+  net.ipv6.conf.all.accept_source_route: '0'
+  net.ipv6.conf.default.accept_source_route: '0'
+  net.ipv4.icmp_echo_ignore_broadcasts: '1'
+  net.ipv4.icmp_ignore_bogus_error_responses: '1'
+  net.ipv4.conf.all.rp_filter: '1'
+  net.ipv4.tcp_syncookies: '1'
+  net.ipv6.conf.all.forwarding: '0'
+  net.ipv4.conf.all.log_martians: '1'
+  net.ipv4.conf.default.log_martians: '1'
+  net.ipv4.ip_forward: '0'  
