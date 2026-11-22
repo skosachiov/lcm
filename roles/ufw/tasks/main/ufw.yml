@@ -4,6 +4,7 @@
     ufw_firewall_files: "{{ var_firewall_files_dir | default(playbook_dir ~ '/inventories/all/files/firewalld') }}"
     ufw_zone_templates: "{{ query('ansible.builtin.fileglob', ufw_firewall_files ~ '/zones/*.j2') | sort }}"
     ufw_direct_template: "{{ ufw_firewall_files }}/direct.xml.j2"
+    ufw_service_ports: "{{ {'ssh': ['22/tcp']} | combine(var_firewall_service_ports | default({})) }}"
     ufw_before_rules:
       - {family: ipv4, file: /etc/ufw/before.rules}
       - {family: ipv6, file: /etc/ufw/before6.rules}
@@ -74,6 +75,23 @@
       vars:
         ufw_direct_pattern: '^[a-zA-Z0-9_./:=!+, -]+ -j (ACCEPT|DROP|REJECT)$'
       loop: "{{ ufw_direct }}"
+      ignore_errors: false
+
+    - name: Validate port mappings for services referenced by zones
+      ansible.builtin.assert:
+        that:
+          - ufw_ports is sequence
+          - ufw_ports is not string
+          - ufw_ports is not mapping
+          - ufw_ports | reject('match', '^[0-9]+(-[0-9]+)?/(tcp|udp|sctp|dccp)$') | list | length == 0
+        fail_msg: "Zone {{ item.0.key }} needs a list of ports for service {{ ufw_service }} in var_firewall_service_ports"
+        quiet: true
+      vars:
+        ufw_service: "{{ item.1['@name'] }}"
+        ufw_ports: "{{ ufw_service_ports.get(ufw_service) }}"
+      loop: "{{ ufw_zones | dict2items | subelements('value.service', skip_missing=true) }}"
+      loop_control:
+        label: "{{ item.0.key }}/{{ ufw_service }}"
       ignore_errors: false
 
     - name: Render the UFW filter rules before changing the host

@@ -33,7 +33,9 @@
 {% set allowed.ports = allowed.ports + [port['@port'] ~ '/' ~ port['@protocol']] %}
 {% endfor %}
 {% for service in services %}
-{% set allowed.ports = allowed.ports + (var_firewall_service_ports[service['@name']] | mandatory) %}
+{% for port in ufw_service_ports[service['@name']] %}
+{% set allowed.ports = allowed.ports + [port] %}
+{% endfor %}
 {% endfor %}
 {% set rules.zones = rules.zones + [{'chain': chain, 'ports': allowed.ports | unique | list,
                                      'target': 'REJECT' if target == 'default' else target}] %}
@@ -64,4 +66,3 @@
 -I {{ output_chain }} 1 {{ rule.arguments }}
 {% endfor %}
 -A {{ output_chain }} -j ACCEPT
-    
