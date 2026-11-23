@@ -172,24 +172,36 @@
       register: grub_raw
       failed_when: false
 
-    - name: Compute current, managed keys and desired cmdline @grub_kernel_args
+    - name: Compute managed keys @grub_kernel_args
+      ignore_errors: "{{ansible_check_mode}}"
+      set_fact:
+        grub_managed_keys: >-
+          {{ ((var_grub_kernel_args_present | default([]) | map('regex_replace', '=.*$', '') | list)
+            + (var_grub_kernel_args_absent  | default([]) | map('regex_replace', '=.*$', '') | list))
+            | unique | list }}
+
+    - name: Compute current cmdline @grub_kernel_args
       ignore_errors: "{{ansible_check_mode}}"
       set_fact:
         grub_current: >-
           {{ ((grub_raw.content | default('') | b64decode)
                | regex_findall('(?m)^' ~ var_grub_cmdline_var ~ '="([^"]*)"')
               + [''])[0] }}
-        grub_managed_keys: >-
-          {{ ((var_grub_kernel_args_present | default([]) | map('regex_replace', '=.*$', '') | list)
-            + (var_grub_kernel_args_absent  | default([]) | map('regex_replace', '=.*$', '') | list))
-            | unique | list }}
+
+    - name: Compute desired cmdline @grub_kernel_args
+      ignore_errors: "{{ansible_check_mode}}"
+      set_fact:
         grub_new_line: >-
+          {% if grub_managed_keys | length == 0 %}
+          {{ (grub_current.split() + (var_grub_kernel_args_present | default([]))) | join(' ') }}
+          {% else %}
           {{ ((grub_current.split()
                | reject('match',
                         '^(' ~ (grub_managed_keys | map('regex_escape') | join('|')) ~ ')(=|$)')
                | list)
               + (var_grub_kernel_args_present | default([])))
              | join(' ') }}
+          {% endif %}
 
     - name: Apply kernel cmdline arguments @grub_kernel_args
       ignore_errors: "{{ansible_check_mode}}"
@@ -225,4 +237,4 @@
     - ws
     - sec
     - grub_kernel_args
-    
+
