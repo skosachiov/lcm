@@ -48,23 +48,11 @@
         - internal
         - public
       notify: Firewalld restarted
-    - name: Set initial firewalld rules Trusted zone @initial_firewalld_rules
+    - name: Set initial firewalld rules Zones @initial_firewalld_rules
       template:
-        src: inventories/all/files/firewall/trusted.xml.j2
-        dest: "/etc/firewalld/zones/trusted.xml"
-      when: var_installation_type == 'workstation' or var_installation_type == 'distribution-point'
-      notify: Firewalld restarted
-    - name: Set initial firewalld rules DMZ zone @initial_firewalld_rules
-      template:
-        src: inventories/all/files/firewall/dmz.xml.j2
-        dest: "/etc/firewalld/zones/dmz.xml"
-      when: var_installation_type == 'workstation' or var_installation_type == 'distribution-point'
-      notify: Firewalld restarted
-    - name: Set initial firewalld rules Work zone @initial_firewalld_rules
-      template:
-        src: inventories/all/files/firewall/work.xml.j2
-        dest: "/etc/firewalld/zones/work.xml"
-      when: var_installation_type == 'workstation' or var_installation_type == 'distribution-point'
+        src: "{{ item }}"
+        dest: "/etc/firewalld/zones/{{ item | basename | regex_replace('\\.j2$', '') }}"
+      loop: "{{ query('fileglob', 'inventories/all/files/firewalld/zones/*.j2') }}"
       notify: Firewalld restarted
     - name: Set initial firewalld rules LogDenied @initial_firewalld_rules
       lineinfile:
@@ -104,14 +92,11 @@
       service:
         name: firewalld
         state: started
-    - name: Drop outgoing traffic Ftp @drop_outgoing_traffic
-      changed_when: false
-      failed_when: no
-      shell: firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 0 -p tcp -m tcp --dport=21 -j DROP
-    - name: Drop outgoing traffic Telnet @drop_outgoing_traffic
-      changed_when: false
-      failed_when: no
-      shell: firewall-cmd --permanent --direct --add-rule ipv4 filter OUTPUT 0 -p tcp -m tcp --dport=23 -j DROP
+    - name: Drop outgoing traffic Direct rules @drop_outgoing_traffic
+      template:
+        src: inventories/all/files/firewalld/direct.xml.j2
+        dest: /etc/firewalld/direct.xml
+      notify: Firewalld restarted
   tags:
     - mob
     - drop_outgoing_traffic
