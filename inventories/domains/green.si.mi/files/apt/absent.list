@@ -1,7 +1,7 @@
-avahi-daemon
-cups
+dsniff
+tshark
 bluetooth
-bluez
-modemmanager
+wireshark
+vnc4server
 whoopsie
 apport

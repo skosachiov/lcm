@@ -1,5 +1,5 @@
-cups
-avahi-daemon
+tshark
+dsniff
 bluetooth
-modemmanager
+vnc4server
 sqlite3 (<< 3.37)
