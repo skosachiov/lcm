@@ -14,8 +14,8 @@
     - name: Set grub2 password for Begin @set_grub2_password
       lineinfile:
         dest: /etc/grub.d/10_linux
-        line: 'CLASS="--class gnu-linux --class gnu --class os --unrestricted"'
-        insertbefore: ^SUPPORTED_INITS=.*
+        line: 'CLASS="${CLASS} --unrestricted"'
+        insertbefore: '^if \[ "x\$\{GRUB_DISTRIBUTOR\}" = "x" \]'
         state: present
         mode: 0700
         create: true
