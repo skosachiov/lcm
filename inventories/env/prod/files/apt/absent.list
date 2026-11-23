@@ -1,9 +1,5 @@
-git
-vim
 tmux
 htop
-tree
-jq
 build-essential
 python3-venv
 ipython3
