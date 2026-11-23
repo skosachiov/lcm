@@ -4,7 +4,6 @@ courier-webadmin
 # transitional snap
 thunderbird
 # transitional t64
-libglib2.0-0 (<< 2.80)
 libgdbm6 (<< 1.23)
 libgdbm-compat4 (<< 1.23)
 libgnutls30 (<< 3.8.3)

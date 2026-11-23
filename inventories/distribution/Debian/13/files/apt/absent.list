@@ -21,5 +21,3 @@ lxd-client
 lxd-tools
 isc-dhcp-client
 isc-dhcp-server
-# obsolete
-libglib2.0-0 (<< 2.80)
