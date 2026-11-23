@@ -1,13 +1,13 @@
-- name: Lock the root account @lock_root_account
-  user:
-    name: root
-    shell: /usr/sbin/nologin
-    password_lock: yes
-  tags:
-    - bl
-    - ws
-    - sec
-    - lock_root_account
+# - name: Lock the root account @lock_root_account
+#   user:
+#     name: root
+#     shell: /usr/sbin/nologin
+#     password_lock: yes
+#   tags:
+#     - bl
+#     - ws
+#     - sec
+#     - lock_root_account
 
 - name: Direct root Logins Not Allowed @no_direct_root_logins
   ignore_errors: "{{ansible_check_mode}}"
