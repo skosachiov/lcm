@@ -4,6 +4,7 @@
     name: "{{'auditd' if ansible_pkg_mgr == 'apt' else 'audit'}}"
     state: present
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -61,6 +62,7 @@
     state: present
     create: true
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -75,6 +77,7 @@
     state: present
     create: true
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -89,6 +92,7 @@
     state: present
     create: true
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -103,6 +107,7 @@
     state: present
     create: true
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -120,6 +125,7 @@
         create: true
       notify: Auditd restarted
   tags:
+    - bl
     - ws
     - sec
     - audispd_conf_q_depth
@@ -138,6 +144,7 @@
         line: active = no
       when: result.stat.exists
   tags:
+    - bl
     - ws
     - sec
     - disable_auditd_audispd_syslog_plugin
@@ -170,6 +177,7 @@
         state: absent
       with_items: "{{ remote_files | difference(local_files) }}"
   tags:
+    - bl
     - ws
     - auditd_remove_outdated_files
 
@@ -183,6 +191,7 @@
     - "{{playbook_dir}}/roles/audit/templates/*"
   notify: Auditd restarted
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -198,6 +207,7 @@
     - "{{playbook_dir}}/roles/audit/templates/*"
   notify: Auditd restarted
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -213,6 +223,7 @@
     state: present
     create: true
   tags:
+    - bl
     - ws
     - sec
     - mob
@@ -232,6 +243,7 @@
         msg: "Auditd rules count is less than the norm"
       when: items.stdout_lines|length < var_auditd_rules_count|int
   tags:
+    - bl
     - ws
     - sec
     - auditd_rules_count
@@ -243,10 +255,11 @@
     state: started
     enabled: true
   tags:
+    - bl
     - ws
     - sec
     - mob
-    - auditd_started    
+    - auditd_started
 
 # Changes required for auditd.conf (by default it rotates files on its
 # own which is not what we're looking for):

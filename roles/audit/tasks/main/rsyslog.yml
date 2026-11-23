@@ -16,6 +16,7 @@
       when:
         - '"rsyslog" in ansible_facts.packages'
   tags:
+    - bl
     - ws
     - sec
     - mob

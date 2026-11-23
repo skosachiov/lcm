@@ -26,5 +26,6 @@
         replace: '# \1'
       with_items: "{{ result.files }}"
   tags:
+    - bl
     - ws
     - rm_third_party_repo

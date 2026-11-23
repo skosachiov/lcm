@@ -97,6 +97,7 @@
         msg: "no root user has UID 0"
       when: items.stdout != "root:x:0:0:root:/root:/bin/bash"
   tags:
+    - bl
     - ws
     - sec
     - mob

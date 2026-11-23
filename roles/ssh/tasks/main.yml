@@ -42,6 +42,7 @@
         validate: /usr/sbin/sshd -t -f %s
       notify: Sshd restarted
   tags:
+    - bl
     - ws
     - sec
     - mac
