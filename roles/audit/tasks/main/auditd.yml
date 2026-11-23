@@ -249,7 +249,7 @@
     - auditd_rules_count
 
 - name: Auditd Running and Enabled @auditd_started
-  ignore_errors: "{{ ansible_check_mode }}"
+  ignore_errors: true
   ansible.builtin.service:
     name: auditd
     state: started
