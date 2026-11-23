@@ -4,17 +4,51 @@
   tags:
     - always
 
+- name: Evaluate version constraints for var_apt_present and var_apt_absent @packages_are_installed_op_map
+  ansible.builtin.set_fact:
+    _apt_op_map:
+      '<<': '<'
+      '<=': '<='
+      '=': '=='
+      '==': '=='
+      '>=': '>='
+      '>>': '>'
+    _apt_present_filtered: []
+    _apt_absent_filtered: []
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - packages_are_installed_op_map
+
+- name: Build filtered list of packages to install @packages_are_installed
+  ansible.builtin.set_fact:
+    _apt_present_filtered: "{{ _apt_present_filtered + [_pkg_name] }}"
+  vars:
+    _parts: "{{ item | regex_search('^([^\\s(]+)(?:\\s*\\(\\s*(<<|<=|==|=|>=|>>)\\s*([^)\\s]+)\\s*\\))?$', '\\1', '\\2', '\\3') }}"
+    _pkg_name: "{{ _parts[0] }}"
+    _pkg_op: "{{ _parts[1] }}"
+    _pkg_ver: "{{ _parts[2] }}"
+    _installed_ver: "{{ ansible_facts.packages[_pkg_name][0].version if (_pkg_name in ansible_facts.packages) else '' }}"
+  when: >-
+    (_pkg_op == '') or
+    (_installed_ver == '') or
+    (_installed_ver is version(_pkg_ver, _apt_op_map[_pkg_op]))
+  loop: "{{ var_apt_present | default([]) }}"
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - packages_are_installed
+
 - name: Ensure packages are installed @packages_are_installed
   ansible.builtin.apt:
-    name: >-
-      {{
-        var_apt_present
-        | map('regex_replace', '\s*\(.*\)$', '')
-        | list
-      }}
+    name: "{{ _apt_present_filtered }}"
     state: latest
     update_cache: true
-  when: var_apt_present | default([]) | length > 0
+  when: _apt_present_filtered | length > 0
   ignore_errors: true
   tags:
     - bl
@@ -23,16 +57,31 @@
     - mob
     - packages_are_installed
 
+- name: Build filtered list of packages to remove @packages_are_removed
+  ansible.builtin.set_fact:
+    _apt_absent_filtered: "{{ _apt_absent_filtered + [_pkg_name] }}"
+  vars:
+    _parts: "{{ item | regex_search('^([^\\s(]+)(?:\\s*\\(\\s*(<<|<=|==|=|>=|>>)\\s*([^)\\s]+)\\s*\\))?$', '\\1', '\\2', '\\3') }}"
+    _pkg_name: "{{ _parts[0] }}"
+    _pkg_op: "{{ _parts[1] }}"
+    _pkg_ver: "{{ _parts[2] }}"
+    _installed_ver: "{{ ansible_facts.packages[_pkg_name][0].version if (_pkg_name in ansible_facts.packages) else '' }}"
+  when:
+    - _pkg_name in ansible_facts.packages
+    - (_pkg_op == '') or (_installed_ver is version(_pkg_ver, _apt_op_map[_pkg_op]))
+  loop: "{{ var_apt_absent | default([]) }}"
+  tags:
+    - bl
+    - ws
+    - sec
+    - mob
+    - packages_are_removed
+
 - name: Ensure unnecessary packages are removed @packages_are_removed
   ansible.builtin.apt:
-    name: >-
-      {{
-        var_apt_absent
-        | map('regex_replace', '\s*\(.*\)$', '')
-        | list
-      }}
+    name: "{{ _apt_absent_filtered }}"
     state: absent
-  when: var_apt_absent | default([]) | length > 0
+  when: _apt_absent_filtered | length > 0
   ignore_errors: true
   tags:
     - bl
