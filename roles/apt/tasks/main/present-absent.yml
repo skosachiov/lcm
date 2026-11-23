@@ -26,7 +26,8 @@
   ansible.builtin.set_fact:
     _apt_present_filtered: "{{ _apt_present_filtered + [_pkg_name] }}"
   vars:
-    _parts: "{{ item | regex_search('^([^\\s(]+)(?:\\s*\\(\\s*(<<|<=|==|=|>=|>>)\\s*([^)\\s]+)\\s*\\))?$', '\\1', '\\2', '\\3') }}"
+    _raw_parts: "{{ item | regex_search('^([^\\s(]+)(?:\\s*\\(\\s*(<<|<=|==|=|>=|>>)\\s*([^)\\s]+)\\s*\\))?$', '\\1', '\\2', '\\3') }}"
+    _parts: "{{ _raw_parts | map('default', '', true) | list }}"
     _pkg_name: "{{ _parts[0] }}"
     _pkg_op: "{{ _parts[1] }}"
     _pkg_ver: "{{ _parts[2] }}"
@@ -34,7 +35,7 @@
   when: >-
     (_pkg_op == '') or
     (_installed_ver == '') or
-    (_installed_ver is version(_pkg_ver, _apt_op_map[_pkg_op]))
+    (_installed_ver is version(_pkg_ver, _apt_op_map.get(_pkg_op, '==')))
   loop: "{{ var_apt_present | default([]) }}"
   tags:
     - bl
@@ -61,14 +62,15 @@
   ansible.builtin.set_fact:
     _apt_absent_filtered: "{{ _apt_absent_filtered + [_pkg_name] }}"
   vars:
-    _parts: "{{ item | regex_search('^([^\\s(]+)(?:\\s*\\(\\s*(<<|<=|==|=|>=|>>)\\s*([^)\\s]+)\\s*\\))?$', '\\1', '\\2', '\\3') }}"
+    _raw_parts: "{{ item | regex_search('^([^\\s(]+)(?:\\s*\\(\\s*(<<|<=|==|=|>=|>>)\\s*([^)\\s]+)\\s*\\))?$', '\\1', '\\2', '\\3') }}"
+    _parts: "{{ _raw_parts | map('default', '', true) | list }}"
     _pkg_name: "{{ _parts[0] }}"
     _pkg_op: "{{ _parts[1] }}"
     _pkg_ver: "{{ _parts[2] }}"
     _installed_ver: "{{ ansible_facts.packages[_pkg_name][0].version if (_pkg_name in ansible_facts.packages) else '' }}"
   when:
     - _pkg_name in ansible_facts.packages
-    - (_pkg_op == '') or (_installed_ver is version(_pkg_ver, _apt_op_map[_pkg_op]))
+    - (_pkg_op == '') or (_installed_ver is version(_pkg_ver, _apt_op_map.get(_pkg_op, '==')))
   loop: "{{ var_apt_absent | default([]) }}"
   tags:
     - bl
