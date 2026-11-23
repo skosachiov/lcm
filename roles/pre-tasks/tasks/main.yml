@@ -503,12 +503,3 @@
       ansible.builtin.set_fact:
         var_apt_present: "{{ _apt_entries_by_state.present | unique | sort }}"
         var_apt_absent: "{{ _apt_entries_by_state.absent | unique | sort }}"
-
-    - name: Print merged APT package summary @default
-      ansible.builtin.debug:
-        msg:
-          levels: "{{ _apt_levels }}"
-          present_count: "{{ var_apt_present | length }}"
-          absent_count: "{{ var_apt_absent | length }}"
-          present: "{{ var_apt_present }}"
-          absent: "{{ var_apt_absent }}"
