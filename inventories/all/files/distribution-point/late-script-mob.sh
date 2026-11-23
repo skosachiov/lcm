@@ -10,7 +10,7 @@ fqdn_mob="paris-ansible.si.mi"
 apt update
 apt install -y git
 apt install -y ansible
-apt install -y python
+apt install -y python3-apt
 apt install -y openssh-server
 
 if [ ! -d /etc/ansible ]; then
@@ -59,7 +59,7 @@ if ! grep -q "localhost ansible_connection=local" "/etc/ansible/hosts"; then
 fi
 
 if ! grep -q "ansible-pull" "/etc/cron.d/ansible-pull"; then
-	echo '35 13 * * * root bash -c "/usr/bin/ansible-pull -i localhost -d /root/.ansible/pull/lcm -U https://'${fqdn_mob}'/git/lcm"' > /etc/cron.d/ansible-pull 
+	echo '35 13 * * * root bash -c "/usr/bin/ansible-pull -i localhost -d /root/.ansible/pull/lcm -U https://'${fqdn_mob}'/git/lcm"' > /etc/cron.d/ansible-pull
 	echo '# EOF' >> /etc/cron.d/ansible-pull
 fi
 

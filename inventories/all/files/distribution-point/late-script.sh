@@ -33,7 +33,7 @@ fi
 apt update
 apt install -y git
 apt install -y ansible
-apt install -y python
+apt install -y python3-apt
 apt install -y openssh-server
 apt install -y dnsutils
 
