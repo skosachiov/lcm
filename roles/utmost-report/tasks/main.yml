@@ -5,6 +5,7 @@
     content: "{{ ansible_facts | to_json }}"
     dest: /etc/ansible/ansible_facts.json
     mode: '0644'
+  ignore_errors: true
   tags:
     - always
     - dump_all_play_stats
