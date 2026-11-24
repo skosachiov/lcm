@@ -1,8 +1,9 @@
-- name: Restrict su to wheel group @su_restricted_pam_wheel
-  replace:
+- name: Restrict su to wheel/sudo group @su_restricted_pam_wheel
+  ansible.builtin.lineinfile:
     path: /etc/pam.d/su
-    regexp: ^[\s]*#[\s]*auth[\s]+required[\s]+pam_wheel\.so(\s+.*)?$
-    replace: auth required pam_wheel.so use_uid
+    regexp: '^\s*#?\s*auth\s+required\s+pam_wheel\.so(\s+.*)?$'
+    line: "auth required pam_wheel.so use_uid {{'group=sudo' if ansible_os_family == 'Debian' else ''}}"
+    state: present
   become: true
   tags:
     - bl
@@ -10,4 +11,3 @@
     - sec
     - mob
     - su_restricted_pam_wheel
-    
