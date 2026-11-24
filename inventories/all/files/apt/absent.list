@@ -1,8 +1,16 @@
+nventories/all/files/apt/absent.list
 gdb
+nventories/all/files/apt/absent.list
 strace
+nventories/all/files/apt/absent.list
 telnet
+nventories/all/files/apt/absent.list
 rsh-client
+nventories/all/files/apt/absent.list
 ftp
+nventories/all/files/apt/absent.list
 nis
+nventories/all/files/apt/absent.list
 ufw
+nventories/all/files/apt/absent.list
 exim4-daemon-light

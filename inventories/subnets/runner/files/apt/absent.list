@@ -1,1 +1,2 @@
+nventories/subnets/runner/files/apt/absent.list
 iputils-ping (<< 20210202)

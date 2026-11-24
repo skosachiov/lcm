@@ -1,1 +1,2 @@
+nventories/distribution/Debian/12/files/apt/absent.list
 iputils-ping (<< 20210202)

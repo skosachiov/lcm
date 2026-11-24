@@ -1,12 +1,24 @@
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 # dropped from noble
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 courier-imap
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 courier-webadmin
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 # transitional snap
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 thunderbird
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 # transitional t64
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 libgdbm6 (<< 1.23)
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 libgdbm-compat4 (<< 1.23)
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 libgnutls30 (<< 3.8.3)
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 libgpgme11 (<< 1.18)
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 # qt6
+nventories/distribution/Ubuntu/26/files/apt/absent.list
 libqt6core5compat6-dev

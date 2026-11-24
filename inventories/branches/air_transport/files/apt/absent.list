@@ -1,5 +1,10 @@
+nventories/branches/air_transport/files/apt/absent.list
 tshark
+nventories/branches/air_transport/files/apt/absent.list
 dsniff
-bluetooth
+nventories/branches/air_transport/files/apt/absent.list
+nmap
+nventories/branches/air_transport/files/apt/absent.list
 vnc4server
+nventories/branches/air_transport/files/apt/absent.list
 sqlite3 (<< 3.37)
