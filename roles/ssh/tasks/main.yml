@@ -581,3 +581,22 @@
     - ws
     - sec
     - sshd_hostkey_algorithms
+
+- name: SSHD Only Approved KexAlgorithms @sshd_only_approved_kex
+  ignore_errors: "{{ ansible_check_mode }}"
+  block:
+    - name: SSHD Only Approved KexAlgorithms @sshd_only_approved_kex
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        create: true
+        regexp: ^\s*#?\s*KexAlgorithms\s*.*$
+        line: KexAlgorithms sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512
+        state: present
+        insertbefore: ^[#\s]*Match
+        validate: /usr/sbin/sshd -t -f %s
+      notify: Sshd restarted
+  tags:
+    - bl
+    - ws
+    - sec
+    - sshd_only_approved_kex
