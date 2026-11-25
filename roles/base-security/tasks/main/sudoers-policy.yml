@@ -7,7 +7,9 @@
         marker_begin: BEGIN_GROUPS
         marker_end: END_GROUPS
         block: |
-          %{{var_local_admin_group}} ALL=(ALL) EXEC:ALL, PASSWD:ALL
+          {% if var_local_admin_group is defined and var_local_admin_group | trim != "" %}
+          %{{ var_local_admin_group }} ALL=(ALL) EXEC:ALL, PASSWD:ALL
+          {% endif %}
           {% for element in var_domain_admin_groups %}
           %{{ element|lower }} ALL=(ALL) EXEC:ALL, PASSWD:ALL
           {% endfor %}          
