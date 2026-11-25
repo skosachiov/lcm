@@ -1,5 +1,5 @@
 nventories/distribution/Debian/13/files/apt/absent.list
-iputils-ping (<< 20210202)
+iputils-ping (<< 2:20210202)
 nventories/distribution/Debian/13/files/apt/absent.list
 # explicitly removed from trixie
 nventories/distribution/Debian/13/files/apt/absent.list
