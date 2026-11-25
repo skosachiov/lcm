@@ -10,9 +10,11 @@
           {% if var_local_admin_group is defined and var_local_admin_group | trim != "" %}
           %{{ var_local_admin_group }} ALL=(ALL) EXEC:ALL, PASSWD:ALL
           {% endif %}
-          {% for element in var_domain_admin_groups %}
-          %{{ element|lower }} ALL=(ALL) EXEC:ALL, PASSWD:ALL
-          {% endfor %}          
+          {% for element in (var_domain_admin_groups | default([])) %}
+          {% if element | trim != "" %}
+          %{{ element | lower }} ALL=(ALL) EXEC:ALL, PASSWD:ALL
+          {% endif %}
+          {% endfor %}
         insertafter: EOF
         validate: /usr/sbin/visudo -cf %s
       when: var_profile not in ["admin", "superadmin"]
@@ -22,14 +24,16 @@
         marker_begin: BEGIN_GROUPS
         marker_end: END_GROUPS
         block: |
-          %{{var_local_admin_group}} ALL=(ALL) EXEC:ALL, PASSWD:ALL
+          {% if var_local_admin_group is defined and var_local_admin_group | trim != "" %}
+          %{{ var_local_admin_group }} ALL=(ALL) EXEC:ALL, PASSWD:ALL
+          {% endif %}
         insertafter: EOF
         validate: /usr/sbin/visudo -cf %s
-      when: var_profile not in ["admin", "superadmin"]
+      when: var_profile in ["admin", "superadmin"]
   tags:
     - ws
     - sec
-    - set_sudoers_groups
+    - set_sudoers_groups    
 
 - name: Set sudoers default noexec @set_sudoers_default_noexec
   ignore_errors: "{{ansible_check_mode}}"
