@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<policy target="DROP">
+  <short>VPN to WAN</short>
+  <description>Allow WireGuard clients to access the internet on specific ports only.</description>
+  <ingress-zone name="trusted"/>
+  <egress-zone name="public"/>
+  <service name="http"/>
+  <service name="https"/>
+  <service name="dns"/>
+  <masquerade/>
+</policy>
