@@ -1,14 +1,7 @@
-nventories/env/test/files/apt/absent.list
 dsniff
-nventories/env/test/files/apt/absent.list
 tshark
-nventories/env/test/files/apt/absent.list
 nmap
-nventories/env/test/files/apt/absent.list
 wireshark
-nventories/env/test/files/apt/absent.list
 vnc4server
-nventories/env/test/files/apt/absent.list
 whoopsie
-nventories/env/test/files/apt/absent.list
 putty

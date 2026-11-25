@@ -1,2 +1,1 @@
-nventories/profiles/superadmin/files/apt/absent.list
 iputils-ping (<< 2:20210202)

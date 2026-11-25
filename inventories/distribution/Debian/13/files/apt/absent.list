@@ -1,46 +1,23 @@
-nventories/distribution/Debian/13/files/apt/absent.list
 iputils-ping (<< 2:20210202)
-nventories/distribution/Debian/13/files/apt/absent.list
 # explicitly removed from trixie
-nventories/distribution/Debian/13/files/apt/absent.list
 deborphan
-nventories/distribution/Debian/13/files/apt/absent.list
 tldr
-nventories/distribution/Debian/13/files/apt/absent.list
 tpp
-nventories/distribution/Debian/13/files/apt/absent.list
 # deprecated
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-bin
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-data
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-modules
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-config-common
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-frontend-all
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-frontend-gtk2
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-frontend-gtk3
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-frontend-qt5
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-module-dbus
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-module-x11
-nventories/distribution/Debian/13/files/apt/absent.list
 fcitx-unikey
-nventories/distribution/Debian/13/files/apt/absent.list
 lxd
-nventories/distribution/Debian/13/files/apt/absent.list
 lxd-client
-nventories/distribution/Debian/13/files/apt/absent.list
 lxd-tools
-nventories/distribution/Debian/13/files/apt/absent.list
 isc-dhcp-client
-nventories/distribution/Debian/13/files/apt/absent.list
 isc-dhcp-server

@@ -1,26 +1,13 @@
-nventories/env/prod/files/apt/absent.list
 tmux
-nventories/env/prod/files/apt/absent.list
 htop
-nventories/env/prod/files/apt/absent.list
 build-essential
-nventories/env/prod/files/apt/absent.list
 python3-venv
-nventories/env/prod/files/apt/absent.list
 ipython3
-nventories/env/prod/files/apt/absent.list
 gdb
-nventories/env/prod/files/apt/absent.list
 strace
-nventories/env/prod/files/apt/absent.list
 mc
-nventories/env/prod/files/apt/absent.list
 snapd
-nventories/env/prod/files/apt/absent.list
 telnet
-nventories/env/prod/files/apt/absent.list
 ftp
-nventories/env/prod/files/apt/absent.list
-vim (<< 9.0)
-nventories/env/prod/files/apt/absent.list
+vim (<< 1:9.0)
 python3-pip (<< 22.0)
