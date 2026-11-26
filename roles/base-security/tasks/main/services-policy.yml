@@ -3,7 +3,7 @@
     name: "{{ item }}"
     state: stopped
     enabled: false
-  loop: "{{ forbidden_services | default([]) }}"
+  loop: "{{ var_forbidden_services | default([]) }}"
   ignore_errors: "{{ ansible_check_mode }}"
   when: var_installation_type not in ["server", "distribution-point"]
   tags:
@@ -17,7 +17,7 @@
     name: "{{ item }}"
     state: started
     enabled: true
-  loop: "{{ required_services | default([]) }}"
+  loop: "{{ var_required_services | default([]) }}"
   ignore_errors: "{{ ansible_check_mode }}"
   when: var_installation_type not in ["server", "distribution-point"]
   tags:
