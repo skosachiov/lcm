@@ -245,3 +245,28 @@
     - sec
     - grub_kernel_args
 
+- name: Check active kernel cmdline arguments in /proc/cmdline @check_grub_kernel_args
+  block:
+    - name: Read /proc/cmdline @check_grub_kernel_args
+      slurp:
+        src: /proc/cmdline
+      register: proc_cmdline_raw
+    - name: Evaluate missing and forbidden args in /proc/cmdline @check_grub_kernel_args
+      vars:
+        active_tokens: "{{ (proc_cmdline_raw.content | b64decode).split() }}"
+        present_list: "{{ var_grub_kernel_args_present | default([]) }}"
+        absent_list: "{{ var_grub_kernel_args_absent | default([]) }}"
+      set_fact:
+        cmdline_missing_args: "{{ present_list | difference(active_tokens) }}"
+        cmdline_forbidden_args: "{{ active_tokens | intersect(absent_list) }}"
+    - name: Report compliance status for /proc/cmdline @check_grub_kernel_args
+      command: "true"
+      changed_when: >-
+        (cmdline_missing_args | length > 0)
+        or (cmdline_forbidden_args | length > 0)
+  tags:
+    - bl
+    - ws
+    - sec
+    - check_grub_kernel_args
+
