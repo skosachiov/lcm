@@ -6,7 +6,6 @@
     state: present
   become: true
   tags:
-    - bl
     - ws
     - sec
     - mob
