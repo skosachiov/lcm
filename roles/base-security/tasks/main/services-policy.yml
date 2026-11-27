@@ -1,10 +1,15 @@
 - name: Ensure forbidden services are stopped and disabled @forbidden_services
-  ansible.builtin.service:
-    name: "{{ item }}"
-    state: stopped
-    enabled: false
-  loop: "{{ var_forbidden_services | default([]) }}"
-  ignore_errors: "{{ ansible_check_mode }}"
+  block:
+    - name: Populate service facts
+      ansible.builtin.service_facts:
+    - name: Stop and disable forbidden services
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop: "{{ var_forbidden_services | default([]) }}"
+      ignore_errors: "{{ ansible_check_mode }}"
+      when: item in ansible_facts.services or (item ~ '.service') in ansible_facts.services
   when: var_installation_type not in ["server", "distribution-point"]
   tags:
     - bl
