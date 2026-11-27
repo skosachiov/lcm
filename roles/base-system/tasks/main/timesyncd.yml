@@ -1,24 +1,32 @@
 - name: Enable service systemd-timesyncd @service_systemd_timesyncd_enabled
-  ignore_errors: "{{ansible_check_mode}}"
+  ignore_errors: "{{ ansible_check_mode }}"
   block:
-    - name: Ensure ntp is removed @service_systemd_timesyncd_enabled
-      package:
-        name: ntp
+    - name: Ensure ntp and chrony are removed @service_systemd_timesyncd_enabled
+      ansible.builtin.package:
+        name:
+          - ntp
+          - chrony
         state: absent
       failed_when: false
-    - name: Ensure chrony is removed @service_systemd_timesyncd_enabled
-      package:
-        name: chrony
-        state: absent
-      failed_when: false
+
     - name: Ensure systemd-timesyncd is installed @service_systemd_timesyncd_enabled
-      package:
+      ansible.builtin.package:
         name: systemd-timesyncd
         state: present
       failed_when: false
-    - name: Gather the package facts @service_systemd_timesyncd_enabled
-      package_facts:
+
+    - name: Gather package facts @service_systemd_timesyncd_enabled
+      ansible.builtin.package_facts:
         manager: auto
+
+    - name: Enable and start systemd-timesyncd @service_systemd_timesyncd_enabled
+      ansible.builtin.systemd:
+        name: systemd-timesyncd
+        enabled: true
+        state: started
+        masked: false
+      failed_when: false
+      when: '"systemd-timesyncd" in ansible_facts.packages'
   tags:
     - bl
     - ws
@@ -27,42 +35,34 @@
     - service_systemd_timesyncd_enabled
 
 - name: Systemd-timesyncd set internal pool @systemd_timesyncd_set_internal_pool
-  ignore_errors: "{{ansible_check_mode}}"
+  ignore_errors: "{{ ansible_check_mode }}"
   block:
     - name: Ensure [Time] section exists @systemd_timesyncd_set_internal_pool
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/systemd/timesyncd.conf
         regexp: '^\[Time\]'
         line: '[Time]'
         create: true
-    - name: Systemd-timesyncd remove external NTP servers @systemd_timesyncd_set_internal_pool
-      replace:
-        path: /etc/systemd/timesyncd.conf
-        regexp: '^#?\s*(NTP|FallbackNTP)\s*=.*$'
-        replace: '# \1='
+        mode: '0644'
+
     - name: Systemd-timesyncd server set @systemd_timesyncd_set_internal_pool
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/systemd/timesyncd.conf
-        regexp: '^NTP\s*='
-        line: "NTP={{var_kdc.split(',')[0]}}"
+        regexp: '^#?\s*NTP\s*='
+        line: "NTP={{ var_kdc.split(',')[0] }}"
         insertafter: '^\[Time\]'
-        create: true
+      notify: Restart systemd-timesyncd
+
     - name: Systemd-timesyncd disable fallback servers @systemd_timesyncd_set_internal_pool
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/systemd/timesyncd.conf
-        regexp: '^FallbackNTP\s*='
+        regexp: '^#?\s*FallbackNTP\s*='
         line: "FallbackNTP="
         insertafter: '^\[Time\]'
-    - name: Enable service systemd-timesyncd @systemd_timesyncd_set_internal_pool
-      systemd:
-        name: systemd-timesyncd
-        enabled: 'yes'
-        state: started
-        masked: no
-      failed_when: false
-      when:
-        - '"systemd-timesyncd" in ansible_facts.packages'
-  when: var_installation_type == "workstation" and var_internal_ansible_ip
+      notify: Restart systemd-timesyncd
+  when:
+    - var_installation_type == "workstation"
+    - var_internal_ansible_ip | default(false) | bool
   tags:
     - bl
     - ws
