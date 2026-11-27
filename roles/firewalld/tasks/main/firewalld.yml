@@ -42,7 +42,6 @@
           </zone>
       with_items:
         - block
-        - drop
         - external
         - home
         - internal

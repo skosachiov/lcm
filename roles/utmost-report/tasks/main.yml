@@ -5,6 +5,7 @@
     content: "{{ ansible_facts | to_json }}"
     dest: /var/log/ansible_facts.json
     mode: '0644'
+  changed_when: false
   ignore_errors: true
   tags:
     - always
