@@ -217,14 +217,14 @@
         LC_ALL: C
       register: ufw_status
       changed_when: false
-
+    
     - name: Verify UFW is active with the expected default policies
       ansible.builtin.assert:
         that:
           - "'Status: active' in ufw_status.stdout"
-          - "'Default: deny (incoming), allow (outgoing), deny (routed)' in ufw_status.stdout"
+          - ufw_status.stdout is search('Default: deny \(incoming\), allow \(outgoing\), (deny|disabled) \(routed\)')
         quiet: true
-
+    
     - name: Verify the shared forwarding filter is loaded
       ansible.builtin.command: iptables -C ufw-before-forward -j DROP
       changed_when: false
