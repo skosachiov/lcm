@@ -1,6 +1,4 @@
 var_auditd_exceptions: |
-  -a never,exit -S all -F exe=/opt/Citrix/ICAClient/wfica
-  -a never,exit -S all -F exe=/usr/lib/chromium/chromium
   -a never,exit -S all -F exe=/lib/systemd/systemd-journald
   -a never,exit -S all -F exe=/usr/sbin/cupsd
   -a never,exit -S all -F path=/bin/sleep
