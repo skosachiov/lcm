@@ -30,6 +30,5 @@
         state: started
         enabled: true
   tags:
-    - bl
     - ws
     - ansible_pull_systemd_service
