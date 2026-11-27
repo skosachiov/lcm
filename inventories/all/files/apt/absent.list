@@ -4,5 +4,4 @@ telnet
 rsh-client
 ftp
 nis
-ufw
 exim4-daemon-light

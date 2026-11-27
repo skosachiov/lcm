@@ -1,7 +1,7 @@
 openssh-server
 openssh-client
 fail2ban
-ufw
+gedit
 auditd
 rsyslog
 sysstat
