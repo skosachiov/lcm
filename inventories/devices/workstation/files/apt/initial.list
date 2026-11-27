@@ -92,7 +92,6 @@ debconf-i18n
 debian-archive-keyring
 debian-faq
 debianutils
-Desired=Unknown/Install/Remove/Purge/Hold
 desktop-base
 desktop-file-utils
 dhcpcd-base
@@ -1615,7 +1614,6 @@ sssd-krb5-common
 sssd-ldap
 sssd-proxy
 sssd-tools
-(Status,Err
 strace
 sudo
 switcheroo-control
