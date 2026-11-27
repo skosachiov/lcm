@@ -202,7 +202,6 @@
           COMMIT
       when: not package_result.failed
   tags:
-    - bl
     - ws
     - sec
     - mob
