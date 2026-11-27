@@ -1,5 +1,5 @@
 rsyslog
-chrony
+sysstat
 auditd
 openssl (>= 3.0)
 libpam0g (>= 1.4)
